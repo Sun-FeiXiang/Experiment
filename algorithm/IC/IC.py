@@ -24,7 +24,6 @@ def runIC(G, S, p=.01):
                     # print(T[i], 'influences', v)
                     T.append(v)
         i += 1
-
     # 整洁的 python ic 版本
     # legitimate version with dynamically changing list: http://stackoverflow.com/a/15725492/2069858
     # for u in T: # T may increase size during iterations
@@ -59,14 +58,21 @@ def runIC2(G, S, p=.01):
                     if random.random() < 1 - (1 - p) ** w:
                         Anext.append((v, u))
         Acur = [edge[0] for edge in Anext]
-        print(i, Anext)
+        #print(i, Anext)
         i += 1
         T.extend(Acur)
         Anext = []
     return T
 
 
-def avgSize(G, S, p, iterations):
+def avgIC_cover_size(G, S, p, iterations):
+    """
+    :param G: 图
+    :param S: 初始集合
+    :param p: 传播概率
+    :param iterations: 迭代次数
+    :return: 平均覆盖大小
+    """
     avg = 0
     for i in range(iterations):
         avg += float(len(runIC(G, S, p))) / iterations

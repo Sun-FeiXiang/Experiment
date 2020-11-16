@@ -4,11 +4,11 @@ Implements greedy heuristic for IC model [1]
 """
 from __future__ import division
 from copy import deepcopy  # copy graph object
-from random import random
+import random
 from priorityQueue import PriorityQueue as PQ
 import networkx as nx
 from runIAC import avgIAC
-
+import matplotlib.pyplot as plt
 
 def bfs(E, S):
     """
@@ -27,51 +27,55 @@ def bfs(E, S):
                     Rs.append(v)
     return Rs
 
+def bfs2(E,node):
+    """
+    :param E: 传播图
+    :param node: 节点node
+    :return: node在E中可到达的节点集
+    """
+    visited = set()
+    import queue
+    q = queue.Queue()
+    q.put(node)
+    res = []
+    while not q.empty():
+        u = q.get()
+        res.append(u)
+        adj = list(E.adj[u].keys())
+        if len(adj) != 0:
+            for v in adj:
+                if v not in visited:
+                    visited.add(v)
+                    q.put(v)
+    return res
 
 def findCCs(G, Ep):
-    # 从图G中移除阻塞边
+    # 从图G中移除阻塞边，获得传播图
     E = deepcopy(G)
     edge_rem = [e for e in E.edges() if random.random() < (1 - Ep[e]) ** (E[e[0]][e[1]]['weight'])]
     E.remove_edges_from(edge_rem)
-
     # 初始化 CC
-    CCs = dict()  # each component is reflection of the number of a component to its members
-    explored = dict(zip(E.nodes(), [False] * len(E)))
-    c = 0
-    # perform BFS to discover CC
-    for node in E:
-        if not explored[node]:
-            c += 1
-            explored[node] = True
-            CCs[c] = [node]
-            component = E[node].keys()
-            for neighbor in component:
-                if not explored[neighbor]:
-                    explored[neighbor] = True
-                    CCs[c].append(neighbor)
-                    component.extend(E[neighbor].keys())
+    CCs = dict()  # 每个组件都反映了组件的成员数
+    # BFS获得CCs
+    for node in E.nodes():
+        CCs[node] = bfs2(E,node)
     return CCs
 
 
 def newGreedyIC(G, k, Ep, R=20):
     S = []
     for i in range(k):
-        print(i)
+        print('k=',i)
         time2k = time.time()
         scores = {v: 0 for v in G}
         for j in range(R):
-            print(j)
             CCs = findCCs(G, Ep)
-            for CC in CCs:
-                for v in S:
-                    if v in CC:
-                        break
-                else:  # in case CC doesn't have node from S
-                    for u in CC:
-                        scores[u] += float(len(CC)) / R
-        max_v, max_score = max(scores.iteritems(), key=lambda dk, dv: dv)
+            for v in CCs:
+                if v not in S:
+                    scores[v] += float(len(CCs[v])) / R
+        max_v, max_score = max(scores.items())
         S.append(max_v)
-        print(time.time() - time2k)
+        print('时间：',time.time() - time2k)
     return S
 
 
@@ -159,12 +163,12 @@ if __name__ == "__main__":
 
     start = time.time()
 
-    G = nx.read_gpickle("../../graphs/hep.gpickle")
+    G_gpickle = nx.read_gpickle("../../data/graphs/hep.gpickle")
     print('Read graph G')
     print(time.time() - start)
 
     model = "MultiValency"
-
+    ep_model = ""
     if model == "MultiValency":
         ep_model = "range"
     elif model == "Random":
@@ -172,15 +176,18 @@ if __name__ == "__main__":
     elif model == "Categories":
         ep_model = "degree"
 
-    # get propagation probabilities
+    # 获得传播概率
     Ep = dict()
-    with open("Ep_hep_%s1.txt" % ep_model) as f:
-        for line in f:
-            data = line.split()
-            Ep[(int(data[0]), int(data[1]))] = float(data[2])
+    p = 0.01
+    G = nx.DiGraph()
+    for key,values in G_gpickle.edge.items():
+        # print(key,list(values.keys()))
+        for end in list(values.keys()):
+            G.add_edge(key,end,weight=values[end]['weight'])
+            Ep[(key,end)] = p
 
     I = 1000
 
     S = newGreedyIC(G, 10, Ep)
-    print(S)
-    print(avgIAC(G, S, Ep, I))
+    print('节点集为：',S)
+    print('平均覆盖大小：',avgIAC(G, S, Ep, I))

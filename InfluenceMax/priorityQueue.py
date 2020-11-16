@@ -1,5 +1,3 @@
-__author__ = 'http://docs.python.org/2/library/heapq.html#priority-queue-implementation-notes'
-
 import itertools
 from heapq import *
 
@@ -10,7 +8,7 @@ class PriorityQueue(object):
         self.entry_finder = {}  # 任务到条目的映射
         self.REMOVED = '<removed-task>'  # 已删除任务的占位符
         self.counter = itertools.count()  # 唯一序列计数
-        print(self.counter)
+        #print(self.counter)
 
     def add_task(self, task, priority=0):
         """添加新任务或更新现有任务的优先级"""
@@ -44,5 +42,3 @@ pq.add_task(pq.REMOVED, -100)
 pq.add_task(1, -75)
 pq.add_task(2, -50)
 pq.add_task(pq.REMOVED, -25)
-if __name__ == '_main__':
-    console = []

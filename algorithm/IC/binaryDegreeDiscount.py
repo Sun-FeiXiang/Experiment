@@ -4,17 +4,17 @@ from InfluenceMax.IC.degreeDiscount import degreeDiscountIC
 from IC.IC import avgSize
 
 def binaryDegreeDiscount(G, tsize, p=.01, a=0.38, step=5, iterations=200):
-    """ Finds minimal number of nodes necessary to reach tsize number of nodes
-    using degreeDiscount algorithms and binary search.
-    Input: G -- networkx graph object
-    tsize -- number of nodes necessary to reach
-    p -- propagation probability
-    a -- fraction of tsize to use as initial seed set size
-    step -- step between iterations of binary search
-    iterations -- number of iterations to average independent cascade
+    """
+    使用梯度搜索算法和二进制搜索，查找达到t个节点数所需的最小节点数。
+    Input: G -- networkx图对象
+    tsize -- 必要达到的节点个数
+    p -- 传播概率
+    a -- 要用作初始种子集大小的tsize的分数
+    step -- 二元搜索的迭代间隔
+    iterations -- 平均独立级联的迭代次数
     Output:
-    S -- seed set
-    Tspread -- spread values for different sizes of seed set
+    S -- 种子集
+    Tspread -- 不同大小种子集的传播值
     """
     Tspread = dict()
     # find initial total spread

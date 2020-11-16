@@ -42,5 +42,4 @@ pq.add_task(pq.REMOVED, -100)
 pq.add_task(1, -75)
 pq.add_task(2, -50)
 pq.add_task(pq.REMOVED, -25)
-if __name__ == '_main__':
-    console = []
+print(pq.pop_item())

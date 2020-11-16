@@ -41,7 +41,7 @@ def degreeHeuristic2(G, k, p=.01):
         # degree = len(G[u])
         d[u] = degree
     for i in range(k):
-        u, degree = max(d.iteritems(), key=lambda (k,v): v)
+        u, degree = max(d.items())
         d.pop(u)
         S.append(u)
     return S
