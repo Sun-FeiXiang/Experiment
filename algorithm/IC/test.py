@@ -27,7 +27,7 @@ if __name__ == '__main__':
 
     list_IC_hep = []
     temp_time = timer()
-    for k in range(5, 31, 5):
+    for k in range(30, 31, 5):
         S = generalGreedy(G, k)
         cal_time = timer() - temp_time
         print('算法运行时间：', cal_time)
@@ -46,7 +46,7 @@ if __name__ == '__main__':
         })
         temp_time = timer()  # 记录当前时间
 
-    import pandas as pd
-    df_IC_hep = pd.DataFrame(list_IC_hep)
-    df_IC_hep.to_csv('../../data/output/IC_generalGreedy_hep_init.csv')
-    print('文件输出完毕——结束')
+    # import pandas as pd
+    # df_IC_hep = pd.DataFrame(list_IC_hep)
+    # df_IC_hep.to_csv('../../data/output/IC_generalGreedy_hep_init.csv')
+    # print('文件输出完毕——结束')
