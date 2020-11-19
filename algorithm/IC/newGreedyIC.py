@@ -5,7 +5,6 @@ Implements greedy heuristic for IC model [1]
 from __future__ import division
 from copy import deepcopy  # copy graph object
 import random
-from priorityQueue import PriorityQueue as PQ
 import networkx as nx
 from runIAC import avgIAC
 import matplotlib.pyplot as plt
@@ -65,8 +64,7 @@ def findCCs(G, Ep):
 def newGreedyIC(G, k, Ep, R=20):
     S = []
     for i in range(k):
-        print('k=',i)
-        time2k = time.time()
+        # print('k=',i)
         scores = {v: 0 for v in G}
         for j in range(R):
             CCs = findCCs(G, Ep)
@@ -75,7 +73,6 @@ def newGreedyIC(G, k, Ep, R=20):
                     scores[v] += float(len(CCs[v])) / R
         max_v, max_score = max(scores.items())
         S.append(max_v)
-        print('时间：',time.time() - time2k)
     return S
 
 

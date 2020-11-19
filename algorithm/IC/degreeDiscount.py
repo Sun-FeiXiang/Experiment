@@ -2,7 +2,7 @@
 独立级联模型下，度折扣算法 degree discount heuristic [1]
 [1] -- Wei Chen et al. Efficient influence maximization in Social Networks (algorithm 4)
 """
-from InfluenceMax.priorityQueue import PriorityQueue as PQ  # priority queue
+from algorithm.priorityQueue import PriorityQueue as PQ  # priority queue
 
 
 def degreeDiscountIC(G, k, p=.01):

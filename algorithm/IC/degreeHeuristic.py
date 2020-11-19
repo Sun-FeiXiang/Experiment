@@ -4,10 +4,7 @@
 
 [1] -- Wei Chen et al. Efficient influence maximization in Social Networks
 """
-from InfluenceMax.priorityQueue import PriorityQueue as PQ  # 优先队列
-from runIAC import avgIAC
-import networkx as nx
-
+from algorithm.priorityQueue import PriorityQueue as PQ  # 优先队列
 
 def degreeHeuristic(G, k, p=.01):
     """

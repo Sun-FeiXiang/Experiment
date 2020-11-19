@@ -26,27 +26,22 @@ if __name__ == "__main__":
     import time
 
     start = time.time()
+    from algorithm.graph_data_handle import read_gpickle
 
-    G_gpickle = nx.read_gpickle("../../data/graphs/hep.gpickle")
-    print('Read graph G')
+    G = read_gpickle("../../data/graphs/hep.gpickle")
     read_time = time.time()
-    print(read_time - start)
+    print('读取网络时间：', read_time - start)
 
-    # 获得传播概率
-    Ep = dict()
-    p = 0.01
-    G = nx.DiGraph()
-    for key, values in G_gpickle.edge.items():
-        # print(key,list(values.keys()))
-        for end in list(values.keys()):
-            G.add_edge(key, end, weight=values[end]['weight'])
-            Ep[(key, end)] = p
+    # 生成固定的传播概率
+    # from algorithm.generation_propagation_probability import fixed_probability
+    # Ep = fixed_probability(G, 0.01)
 
     I = 1000
-
-    print('Calculate...')
     S = randomHeuristic(G, 10)
     cal_time = time.time()
-    print(cal_time - read_time)
-    print('节点集为：', S)
-    print('平均覆盖大小：', avgIAC(G, S, Ep, I))
+    print('算法运行时间：', cal_time - read_time)
+    print('选取节点集为：', S)
+
+    from algorithm.IC.IC import avgIC_cover_size
+
+    print('平均覆盖大小：', avgIC_cover_size(G, S, 0.01, I))

@@ -3,6 +3,7 @@ import networkx as nx
 from InfluenceMax.IC.degreeDiscount import degreeDiscountIC
 from IC.IC import avgSize
 
+
 def binaryDegreeDiscount(G, tsize, p=.01, a=0.38, step=5, iterations=200):
     """
     使用梯度搜索算法和二进制搜索，查找达到t个节点数所需的最小节点数。
@@ -71,22 +72,22 @@ if __name__ == '__main__':
     import time
 
     start = time.time()
+    from algorithm.graph_data_handle import read_gpickle
 
-    # read in graph
-    G = nx.Graph()
-    with open('graphdata/../graphdata/hep.txt') as f:
-        n, m = f.readline().split()
-        for line in f:
-            u, v = map(int, line.split())
-            try:
-                G[u][v]['weight'] += 1
-            except:
-                G.add_edge(u, v, weight=1)
-    print('Built graph G')
-    print(time.time() - start)
+    G = read_gpickle("../../data/graphs/hep.gpickle")
+    read_time = time.time()
+    print('读取网络时间：', read_time - start)
 
-    tsize = 200
-    S, Tsize = binaryDegreeDiscount(G, tsize, step=5)
-    print('Necessary %s initial nodes to target %s nodes in graph G' % (len(S), tsize))
-    print(time.time() - start)
-    console = []
+    # 生成固定的传播概率
+    # from algorithm.generation_propagation_probability import fixed_probability
+    # Ep = fixed_probability(G, 0.01)
+
+    I = 1000
+    S = binaryDegreeDiscount(G, 10)
+    cal_time = time.time()
+    print('算法运行时间：', cal_time - read_time)
+    print('选取节点集为：', S)
+
+    from algorithm.IC.IC import avgIC_cover_size
+
+    print('平均覆盖大小：', avgIC_cover_size(G, S, 0.01, I))

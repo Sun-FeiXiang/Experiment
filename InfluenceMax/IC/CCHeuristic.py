@@ -1,9 +1,4 @@
-'''
-We first delete an edge from original graph with probability (1-p)**w.
-Then we calculate SCC for this graph.
-Then for all vertices in a component we add to its score the number of nodes in this component.
-Procedure repeats R times to get some average.
-Then k nodes with top scores are selected.
+"""
 无向图中基于连通分量Connected Components (CC)的启发式算法的实现。
 我们首先用（1-p）**w的概率从原始图中删除一条边。
 然后我们计算这个图的SCC。
@@ -12,7 +7,7 @@ Then k nodes with top scores are selected.
 然后选取得分最高的k个节点。
 References:
 Kempe et al. "Maximizing the spread of influence through a social network" Claim 2.3
-'''
+"""
 
 from __future__ import division
 
@@ -21,7 +16,7 @@ from heapq import nlargest
 from copy import deepcopy
 
 def CC_heuristic (G, k, p, R=20):
-    '''
+    """
      Input:
      G -- undirected graph (nx.Graph)
      k -- number of nodes in seed set (int)
@@ -29,7 +24,7 @@ def CC_heuristic (G, k, p, R=20):
      R -- number of iterations to estimate scores of nodes (int)
      Output:
      S -- seed set (list of tuples: for each tuple first argument is a node, second argument is its score)
-    '''
+    """
     scores = dict(zip(G.nodes(), [0]*len(G))) # initialize scores
     start = time.time()
     for it in range(R):
@@ -56,7 +51,7 @@ def CC_heuristic (G, k, p, R=20):
                         component.extend(E[neighbor].keys())
 
         # add score only to top components
-        topCC = nlargest(k, CC.iteritems(), key= lambda (dk,dv): len(dv))
+        topCC = nlargest(k, CC.items(), key= lambda dk,dv: len(dv))
         for (c, component) in topCC:
             # print c, len(component)
             weighted_score = 1.0/len(component)**(.5)

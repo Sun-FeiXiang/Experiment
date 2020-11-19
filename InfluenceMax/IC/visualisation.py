@@ -5,7 +5,7 @@ from copy import deepcopy
 import networkx as nx
 import matplotlib.pylab as plt
 
-from IC.IC import runIC
+from InfluenceMax.IC.IC import runIC
 
 
 def neighborsOfS(G, S, radius):
@@ -119,7 +119,7 @@ if __name__ == '__main__':
 
     # read in graph
     G = nx.Graph()
-    with open('graphdata/../graphdata/hep.txt') as f:
+    with open('../graphdata/graphdata/hep.txt') as f:
         n, m = f.readline().split()
         for line in f:
             u, v = map(int, line.split())

@@ -1,9 +1,9 @@
-'''
+"""
 Independent Arbitrary Cascade (IAC) is a independent cascade model with arbitrary
  propagation probabilities.
- 
+
 From  https://github.com/nd7141/influence-maximization/tree/master/IC
-'''
+"""
 
 from __future__ import division
 from copy import deepcopy
@@ -229,5 +229,4 @@ def findLrangeforTrange(G, Ep, Trange):
 
 if __name__ == '__main__':
     import time
-
     start = time.time()

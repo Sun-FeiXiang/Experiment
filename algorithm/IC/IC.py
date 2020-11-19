@@ -58,7 +58,6 @@ def runIC2(G, S, p=.01):
                     if random.random() < 1 - (1 - p) ** w:
                         Anext.append((v, u))
         Acur = [edge[0] for edge in Anext]
-        #print(i, Anext)
         i += 1
         T.extend(Acur)
         Anext = []

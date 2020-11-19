@@ -109,7 +109,7 @@ g.write_pickle("data\\trained_network.pickle")
 # ------------ Compute structural node statistics
 start = time.time()
 kcores = g.shell_index(mode="IN")
-log.write("K-core time:" + str(time.time() - start) + "\n")
+log.write("K_core time:" + str(time.time() - start) + "\n")
 
 # ------------ Store the node features
 pd.DataFrame({"Nodes": g.vs["name"],
