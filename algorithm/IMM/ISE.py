@@ -1,9 +1,8 @@
+from algorithm.IMM.invgraph import Graph
 from algorithm.IMM.graph import pGraph
 import random
 import multiprocessing as mp
 import time
-import getopt
-import sys
 
 
 class Worker(mp.Process):
@@ -25,9 +24,9 @@ class Worker(mp.Process):
 
 def create_worker(num, task_num):
     """
-        create processes
-        :param num: process number
-        :param task_num: the number of tasks assigned to each worker
+        创建进程
+        :param num: 进程数
+        :param task_num: 分配给每个worker的任务数
     """
     for i in range(num):
         worker.append(Worker(mp.Queue(), task_num))
@@ -44,7 +43,8 @@ def finish_worker():
 
 
 def ise():
-    global model
+    print('model', model)
+    print('Seeds', seeds)
     if model == 'IC':
         return IC()
     elif model == 'LT':
@@ -53,9 +53,8 @@ def ise():
 
 def read_file(network, seed):
     """
-    read network file into a graph and read seed file into a list
-    :param network: the file path of network
-    :param seed: the file path of seed
+       读取网络数据并用自定义的数据结构存储
+       :param network: 文件路径
     """
     global node_num, edge_num, graph, seeds
     data_lines = open(network, 'r').readlines()
@@ -63,7 +62,7 @@ def read_file(network, seed):
     node_num = int(data_lines[0].split()[0])
     edge_num = int(data_lines[0].split()[1])
 
-    for data_line in data_lines[1: ]:
+    for data_line in data_lines[1:]:
         start, end, weight = data_line.split()
         graph.add_edge(int(start), int(end), float(weight))
 
@@ -73,9 +72,11 @@ def read_file(network, seed):
 
 def IC():
     """
-    implement independent cascade model
+    实现独立级联模型。
+    节点尝试激活它的所有邻居（每个只尝试激活一次），然后新激活的节点再尝试激活它们的邻居，
+    重复该过程直到没有节点再可以被激活。
     """
-    global seeds, graph
+    # print('seeds',seeds)
     count = len(seeds)
     activity_set = set(seeds)
     active_nodes = set(seeds)
@@ -94,9 +95,9 @@ def IC():
 
 def LT():
     """
-    implement linear threshold model
+    实现线性阈值模型：
+    节点周围的权值之和大于该节点的阈值，则该节点被激活。
     """
-    global seeds, graph
     count = len(seeds)
     activity_set = set(seeds)
     active_nodes = set(seeds)
@@ -126,6 +127,9 @@ def calculate_influence(Sk, model_type, _graph):
     seeds = Sk
     worker = []
     worker_num = 8
+    # print('S',seeds)
+    # print('模型',model)
+
     create_worker(worker_num, int(10000 / worker_num))
     result = []
     for w in worker:
@@ -134,6 +138,12 @@ def calculate_influence(Sk, model_type, _graph):
     # print('%.2f' % (sum(result) / 10000))
     finish_worker()
     return sum(result) / 10000
+
+
+model = 'IC'
+seeds = []
+graph = Graph()
+pGraph = pGraph()
 
 if __name__ == "__main__":
     """
@@ -145,7 +155,6 @@ if __name__ == "__main__":
     """
     node_num = 0
     edge_num = 0
-    graph = pGraph()
     seeds = []
     model = 'IC'
     """
@@ -153,25 +162,15 @@ if __name__ == "__main__":
     """
     network_path = "test_data/NetHEPT.txt"
     seed_path = "test_data/seeds2.txt"
-    model = 'IC'
+
     termination = 10
     start = time.time()
-    opts, args = getopt.getopt(sys.argv[1:], 'i:s:m:t:')
-    for opt, val in opts:
-        if opt == '-i':
-            network_path = val
-        elif opt == '-s':
-            seed_path = val
-        elif opt == '-m':
-            model = val
-        elif opt == '-t':
-            termination = val
 
     read_file(network_path, seed_path)
 
     worker = []
     worker_num = 2
-    create_worker(worker_num, int(10000/worker_num))
+    create_worker(worker_num, int(10000 / worker_num))
     result = []
     for w in worker:
         # print(w.outQ.get())

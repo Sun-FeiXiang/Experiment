@@ -37,11 +37,16 @@ if __name__ == '__main__':
     I = 1000
 
     from algorithm.IC.randomHeuristic import randomHeuristic
+    from algorithm.IC.degreeDiscount import degreeDiscountIC
+    from algorithm.IC.degreeHeuristic import degreeHeuristic
+    from algorithm.IC.generalGreedy import generalGreedy
+    from algorithm.IC.newGreedyIC import newGreedyIC
+    from algorithm.IC.singleDiscount import singleDiscount
 
     list_IC_random_hep = []
     temp_time = timer()
     for k in range(5, 31, 5):
-        S = randomHeuristic(sub_g, k)
+        S = newGreedyIC(sub_g, k,Ep)
         cal_time = timer() - temp_time
         print('算法运行时间：', cal_time)
         print('选取节点集为：', S)
@@ -61,5 +66,5 @@ if __name__ == '__main__':
 
     import pandas as pd
     df_IC_random_hep = pd.DataFrame(list_IC_random_hep)
-    df_IC_random_hep.to_csv('../../data/output/IC_random_hep_dominating_set.csv')
+    df_IC_random_hep.to_csv('../../data/output/IC_newGreedyIC_hep_dominating_set.csv')
     print('文件输出完毕——结束')

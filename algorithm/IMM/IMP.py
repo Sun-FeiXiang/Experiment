@@ -1,49 +1,30 @@
+from IMM import ISE
 from algorithm.IMM.invgraph import Graph
 from algorithm.IMM.graph import pGraph
 import random
 import multiprocessing as mp
 import time
-import getopt
-import sys
 import math
-import heapq
-import algorithm.IMM.ISE
+from timeit import default_timer as timer
+
+"""
+
+来源：Influence Maximization in Near-Linear Time: A Martingale Approach
+算法步骤：
+    第一步根据触发模型估算需要的反向可达集的数量并生成这些反向可达集（Sampling子函数），将他们存在一个数据结构R中；
+    第二步是在R中用贪心方法找到k个节点使他们覆盖的反向可达集尽量多（NodeSelection子函数）。
+"""
 
 
-class Worker(mp.Process):
-    def __init__(self, inQ, outQ):
-        super(Worker, self).__init__(target=self.start)
-        self.inQ = inQ
-        self.outQ = outQ
-        self.R = []
-        self.count = 0
-
-    def run(self):
-
-        while True:
-            theta = self.inQ.get()
-            # print(theta)
-            while self.count < theta:
-                print(node_num)
-                v = random.randint(1, node_num)
-                rr = generate_rr(v)
-                self.R.append(rr)
-                self.count += 1
-            self.count = 0
-            self.outQ.put(self.R)
-            self.R = []
-
-
-def create_worker(num):
+def create_worker(num,task_num):
     """
-        create processes
-        :param num: process number
-        :param task_num: the number of tasks assigned to each worker
+        创建进程
+        :param num: 进程数目
+        :param task_num: 分配给每个worker的任务数
     """
     global worker
     for i in range(num):
-        # print(i)
-        worker.append(Worker(mp.Queue(), mp.Queue()))
+        worker.append(Worker(mp.Queue(), mp.Queue(),task_num))
         worker[i].start()
 
 
@@ -56,15 +37,42 @@ def finish_worker():
         w.terminate()
 
 
+class Worker(mp.Process):
+    def __init__(self, inQ, outQ,task_num):
+        super(Worker, self).__init__(target=self.start)
+        self.inQ = inQ
+        self.outQ = outQ
+        self.R = []
+        self.count = 0
+        self.node_num = task_num
+
+    def run(self):
+
+        while True:
+            theta = self.inQ.get()
+            # print(theta)
+            while self.count < theta:
+                #print('node_num',self.node_num)
+                v = random.randint(1, self.node_num)  # 生成随机节点
+                rr = generate_rr(v) #生成节点v的RR集
+                self.R.append(rr)
+                self.count += 1
+            self.count = 0
+            self.outQ.put(self.R)
+            self.R = []
+
+
 def sampling(epsoid, l):
+    print("Sampling ...")
     global graph, seed_size, worker
     R = []
     LB = 1
     n = node_num
+    #print('sampling',node_num)
     k = seed_size
     epsoid_p = epsoid * math.sqrt(2)
     worker_num = 2
-    create_worker(worker_num)
+    create_worker(worker_num,node_num)
     for i in range(1, int(math.log2(n - 1)) + 1):
         s = time.time()
         x = n / (math.pow(2, i))
@@ -80,12 +88,12 @@ def sampling(epsoid, l):
         # finish_worker()
         # worker = []
         end = time.time()
-        print('time to find rr', end - s)
+        print('   RR集计算时间：', end - s)
         start = time.time()
         Si, f = node_selection(R, k)
-        print(f)
+        #print(f)
         end = time.time()
-        print('node selection time', time.time() - start)
+        print('   节点选择时间：', time.time() - start)
         # print(F(R, Si))
         # f = F(R,Si)
         if n * f >= (1 + epsoid_p) * x:
@@ -130,6 +138,12 @@ def generate_rr(v):
 
 
 def node_selection(R, k):
+    """
+    第二步
+    :param R: 反向可达集
+    :param k: 初始节点数
+    :return: 影响最大的节点集
+    """
     Sk = set()
     rr_degree = [0 for ii in range(node_num + 1)]
     node_rr_set = dict()
@@ -256,10 +270,10 @@ def logcnk(n, k):
 
 def read_file(network):
     """
-    read network file into a graph and read seed file into a list
-    :param network: the file path of network
+    读取网络数据并用自定义的数据结构存储
+    :param network: 文件路径
     """
-    global node_num, edge_num, graph, seeds, pGraph
+    global node_num, edge_num, graph
     data_lines = open(network, 'r').readlines()
     node_num = int(data_lines[0].split()[0])
     edge_num = int(data_lines[0].split()[1])
@@ -267,8 +281,6 @@ def read_file(network):
     for data_line in data_lines[1:]:
         start, end, weight = data_line.split()
         graph.add_edge(int(start), int(end), float(weight))
-        pGraph.add_edge(int(start), int(end), float(weight))
-
 
 """
     定义全局变量:node_num、edge_num、graph、seeds
@@ -280,43 +292,33 @@ pGraph = pGraph()
 model = 'IC'
 
 if __name__ == "__main__":
-
-    """
-    command line parameters
-    usage: python3 IMP.py -i <graph file path> -k <the number of seeds> -m <IC or LT> -t <termination time> 
-    python3 F:/workspace/pycharm_workspace/Experiment/algorithm/IMM/IMP.py -i test_data/NetHEPT.txt -k 30 -m IC -t 10
-    """
     start = time.time()
     network_path = "test_data/NetHEPT.txt"
     model = 'IC'
-    seed_size = 0
+    seed_size = 10
     termination = 10
-    # start = time.time()
-    opts, args = getopt.getopt(sys.argv[1:], 'i:k:m:t:')
-    for opt, val in opts:
-        if opt == '-i':
-            network_path = val
-        elif opt == '-k':
-            seed_size = int(val)
-        elif opt == '-m':
-            model = val
-        elif opt == '-t':
-            termination = int(val)
-
     read_file(network_path)
-    print(node_num, edge_num)
+    read_time = time.time()
+    print('读取网络时间：', read_time - start)
+    temp_time = timer()
+    print("(节点数，边数)",node_num, edge_num)
 
     worker = []
     epsoid = 0.5
     l = 1
-    seeds = imm(epsoid, l)
-    # print(seeds)
-    for seed in seeds:
-        print(seed)
+    I = 1000    #迭代次数
+    S = imm(epsoid, l)
+    cal_time = timer() - temp_time
+    print('IMM算法运行时间：', cal_time)
+    print('k = ', seed_size, '选取节点集为：', S)
 
-    end = time.time()
-    print(end - start)
+    list_IC_random_hep = []
+    average_cover_size = ISE.calculate_influence(S, model, pGraph)
+    list_IC_random_hep.append({'k': seed_size,'run time': cal_time,'average cover size': average_cover_size,'S': S})
+    temp_time = timer()  # 记录当前时间
+    print('平均覆盖大小：', average_cover_size)
+    # import pandas as pd
     #
-    # res = ISE.calculate_influence(seeds, model, pGraph)
-    #
-    # print(res)
+    # # df_IC_random_hep = pd.DataFrame(list_IC_random_hep)
+    # # df_IC_random_hep.to_csv('../../data/output/IC_CCA_hep.csv')
+    # # print('文件输出完毕——结束')
