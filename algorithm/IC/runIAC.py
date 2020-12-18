@@ -1,20 +1,20 @@
 """
-Independent Arbitrary Cascade (IAC) is a independent cascade model with arbitrary
- propagation probabilities.
-
-From  https://github.com/nd7141/influence-maximization/tree/master/IC
+独立任意级联模型
+Independent Arbitrary Cascade (IAC) 是拥有任意传播概率的独立级联模型。
 """
 
 from __future__ import division
+
+import math
+import random
 from copy import deepcopy
-import random, multiprocessing, os, math, json
+
 import networkx as nx
-import matplotlib.pylab as plt
 
 
 def uniformEp(G, p=.01):
     """
-    Every edge has the same probability p.
+    每条边都拥有相同的概率p.
     """
     if type(G) == type(nx.DiGraph()):
         Ep = dict(zip(G.edges(), [p] * len(G.edges())))
@@ -76,7 +76,7 @@ def chunks(lst, n):
 
 def degree_categories(G, prange):
     """
-    Every edge has propagation probability chosen from prange based on degree of a node.
+    每一条边都有一个基于节点度数的传播概率。
     """
     for p in prange:
         if p > 1:
@@ -84,7 +84,7 @@ def degree_categories(G, prange):
     Ep = dict()
 
     d = {v: sum([G[v][u]["weight"] for u in G[v]]) for v in G}
-    sorted_d = chunks(sorted(d.iteritems(), key=lambda _, degree: degree), len(prange))
+    sorted_d = chunks(sorted(d.items(), key=lambda _, degree: degree), len(prange))
     sorted_p = sorted(prange)
     categories = zip(sorted_p, sorted_d)
     dp = dict()
@@ -105,7 +105,7 @@ def degree_categories(G, prange):
 
 def weightedEp(G):
     """
-    Every incoming edge of v has propagation probability equals to 1/deg(v)
+    v的每一个输入边的传播概率等于1/deg（v）
     """
     Ep = dict()
     for v in G:
@@ -118,18 +118,17 @@ def weightedEp(G):
 
 def runIAC(G, S, Ep):
     """
-    Runs independent arbitrary cascade model.
-    Input: G -- networkx graph object
-    S -- initial set of vertices
-    Ep -- propagation probabilities
-    Output: T -- resulted influenced set of vertices (including S)
+    运行独立级联模型
+    Input: G -- networkx图
+    S -- 输出话节点集
+    Ep -- 传播概率
+    Output: T -- 影响的节点集（包括S）
 
     NOTE:
-    Ep is a dictionary for each edge it has associated probability
-    If graph is undirected for each edge (v1,v2) with probability p,
-     we have Ep[(v1,v2)] = p, Ep[(v2,v1)] = p.
+    Ep是一个字典，它对应于每个边的关联概率如果每个边（v1，v2）的图是无向的，概率为p，
+    我们有Ep[(v1，v2)]=p，Ep[(v2，v1)]=p。
     """
-    T = deepcopy(S)  # copy already selected nodes
+    T = deepcopy(S)  # 复制已经存在的节点
 
     # ugly C++ version
     i = 0
@@ -229,4 +228,5 @@ def findLrangeforTrange(G, Ep, Trange):
 
 if __name__ == '__main__':
     import time
+
     start = time.time()

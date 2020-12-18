@@ -8,30 +8,23 @@ if __name__ == '__main__':
     import time
 
     start = time.time()
-    from algorithm.graph_data_handle import read_gpickle
+    from data_handle.graph_data_handle import read_gpickle_DiGraph
 
-    G = read_gpickle("../../data/graphs/hep.gpickle")
+    G = read_gpickle_DiGraph("../../data/graphs/hep.gpickle")
     read_time = time.time()
     print('读取网络时间：', read_time - start)
 
     #生成固定的传播概率
-    from algorithm.generation_propagation_probability import fixed_probability
+    from generation.generation_propagation_probability import fixed_probability
     Ep = fixed_probability(G, 0.01)
 
     print('提取k-core子图（核心图）')
-    from algorithm.K_core.k_core_subgraph import find_kcores
     G.remove_edges_from(nx.selfloop_edges(G))
     sub_g = nx.k_core(G)
 
     I = 1000
 
-    from algorithm.IC.randomHeuristic import randomHeuristic
-    from algorithm.IC.degreeDiscount import degreeDiscountIC
-    from algorithm.IC.degreeHeuristic import degreeHeuristic
-    from algorithm.IC.generalGreedy import generalGreedy
     from algorithm.IC.newGreedyIC import newGreedyIC
-    from algorithm.IC.singleDiscount import singleDiscount
-
 
     list_IC_hep = []
     temp_time = timer()

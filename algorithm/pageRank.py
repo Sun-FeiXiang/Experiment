@@ -23,30 +23,29 @@ if __name__ == "__main__":
     import time
 
     start = time.time()
-    from algorithm.graph_data_handle import read_gpickle
-
-    G = read_gpickle("../data/graphs/hep.gpickle")
+    G = nx.read_weighted_edgelist("../data/soc-Epinions1.txt", comments='#', nodetype=int, create_using=nx.DiGraph())
+    G1 = G.copy()
     read_time = time.time()
     print('读取网络时间：', read_time - start)
 
-    # 生成固定的传播概率
-    # from algorithm.generation_propagation_probability import fixed_probability
-    # Ep = fixed_probability(G, 0.01)
+    #生成固定的传播概率
+    from generation.generation_propagation_probability import weight_probability_inEdge
+    weight_probability_inEdge(G)
 
     I = 1000
 
     list_IC_random_hep = []
     temp_time = timer()
-    for k in range(5, 31, 5):
+    for k in range(5, 51, 5):
         S = pageRank(G, k)
         cal_time = timer() - temp_time
         print('PageRank算法运行时间：', cal_time)
         print('k = ', k, '选取节点集为：', S)
 
-        from algorithm.IC.IC import avgIC_cover_size
+        from algorithm.Spread.NetworkxSpread import spread_run
 
-        average_cover_size = avgIC_cover_size(G, S, 0.01, I)
-        print('平均覆盖大小：', average_cover_size)
+        average_cover_size = spread_run(S, G, 1000)
+        print('k=', k, '平均覆盖大小：', average_cover_size)
 
         list_IC_random_hep.append({
             'k': k,
@@ -58,6 +57,6 @@ if __name__ == "__main__":
 
     import pandas as pd
 
-    # df_IC_random_hep = pd.DataFrame(list_IC_random_hep)
-    # df_IC_random_hep.to_csv('../../data/output/IC_CCA_hep.csv')
-    # print('文件输出完毕——结束')
+    df_IC_random_hep = pd.DataFrame(list_IC_random_hep)
+    df_IC_random_hep.to_csv('../data/output/pageRank/IC_pageRank_Epinions.csv')
+    print('文件输出完毕——结束')

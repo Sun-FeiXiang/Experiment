@@ -2,7 +2,8 @@ from timeit import default_timer as timer
 import networkx as nx
 
 """
-来源DiffuGreedy: An Influence Maximization Algorithm Based on Diffusion Cascades对比算法
+实现：k-core分解算法
+来源：DiffuGreedy: An Influence Maximization Algorithm Based on Diffusion Cascades对比算法
 """
 
 
@@ -44,9 +45,9 @@ if __name__ == "__main__":
     import time
 
     start = time.time()
-    from algorithm.graph_data_handle import read_gpickle
+    from data_handle.graph_data_handle import read_gpickle_DiGraph
 
-    G = read_gpickle("../../data/graphs/hep.gpickle")
+    G = read_gpickle_DiGraph("../../data/graphs/hep.gpickle")
     read_time = time.time()
     print('读取网络时间：', read_time - start)
 
@@ -76,8 +77,6 @@ if __name__ == "__main__":
             'S': S
         })
         temp_time = timer()  # 记录当前时间
-
-    import pandas as pd
 
     # df_IC_random_hep = pd.DataFrame(list_IC_random_hep)
     # df_IC_random_hep.to_csv('../../data/output/IC_CCA_hep.csv')

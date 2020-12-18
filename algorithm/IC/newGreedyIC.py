@@ -1,14 +1,13 @@
 """
-Implements greedy heuristic for IC model [1]
-[1] -- Wei Chen et al. Efficient Influence Maximization in Social Networks (Algorithm 2)
+算法：IC模型中的greedy heuristic
+来源：[1] -- Wei Chen et al. Efficient Influence Maximization in Social Networks (Algorithm 2)
+
+无向图
+
 """
 from __future__ import division
-from copy import deepcopy  # copy graph object
+from copy import deepcopy
 import random
-import networkx as nx
-from runIAC import avgIAC
-import matplotlib.pyplot as plt
-
 
 def bfs(E, S):
     """
@@ -84,14 +83,14 @@ if __name__ == "__main__":
     import time
 
     start = time.time()
-    from algorithm.graph_data_handle import read_gpickle
+    from data_handle.graph_data_handle import read_gpickle_DiGraph
 
-    G = read_gpickle("../../data/graphs/hep.gpickle")
+    G = read_gpickle_DiGraph("../../data/graphs/hep.gpickle")
     read_time = time.time()
     print('读取网络时间：', read_time - start)
 
     # 生成固定的传播概率
-    from algorithm.generation_propagation_probability import fixed_probability
+    from generation.generation_propagation_probability import fixed_probability
 
     Ep = fixed_probability(G, 0.01)
 

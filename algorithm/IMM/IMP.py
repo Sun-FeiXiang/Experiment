@@ -1,4 +1,3 @@
-from IMM import ISE
 from algorithm.IMM.invgraph import Graph
 from algorithm.IMM.graph import pGraph
 import random
@@ -6,7 +5,7 @@ import multiprocessing as mp
 import time
 import math
 from timeit import default_timer as timer
-
+from algorithm.Spread.NetworkSpread import spread_run
 """
 
 来源：Influence Maximization in Near-Linear Time: A Martingale Approach
@@ -88,12 +87,12 @@ def sampling(epsoid, l):
         # finish_worker()
         # worker = []
         end = time.time()
-        print('   RR集计算时间：', end - s)
+        #print('   RR集计算时间：', end - s)
         start = time.time()
         Si, f = node_selection(R, k)
         #print(f)
         end = time.time()
-        print('   节点选择时间：', time.time() - start)
+        #print('   节点选择时间：', time.time() - start)
         # print(F(R, Si))
         # f = F(R,Si)
         if n * f >= (1 + epsoid_p) * x:
@@ -295,7 +294,7 @@ if __name__ == "__main__":
     start = time.time()
     network_path = "test_data/NetHEPT.txt"
     model = 'IC'
-    seed_size = 10
+    seed_size = 50
     termination = 10
     read_file(network_path)
     read_time = time.time()
@@ -313,7 +312,8 @@ if __name__ == "__main__":
     print('k = ', seed_size, '选取节点集为：', S)
 
     list_IC_random_hep = []
-    average_cover_size = ISE.calculate_influence(S, model, pGraph)
+    iterations = 1000
+    average_cover_size = spread_run(S,graph,iterations)
     list_IC_random_hep.append({'k': seed_size,'run time': cal_time,'average cover size': average_cover_size,'S': S})
     temp_time = timer()  # 记录当前时间
     print('平均覆盖大小：', average_cover_size)

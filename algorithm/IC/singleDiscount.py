@@ -1,7 +1,7 @@
 """
-基于独立级联的简单折扣启发式算法 single discount heuristic[1]
+算法：基于独立级联的简单折扣启发式算法 single discount heuristic[1]
 
-[1] -- Wei Chen et al. Efficient influence maximization in Social Networks
+参考：[1] -- Wei Chen et al. Efficient influence maximization in Social Networks
 """
 from priorityQueue import PriorityQueue as PQ  # priority queue
 

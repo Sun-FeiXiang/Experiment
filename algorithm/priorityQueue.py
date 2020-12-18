@@ -37,9 +37,10 @@ class PriorityQueue(object):
         return str([entry for entry in self.pq if entry[2] != self.REMOVED])
 
 
-pq = PriorityQueue()
-pq.add_task(pq.REMOVED, -100)
-pq.add_task(1, -75)
-pq.add_task(2, -50)
-pq.add_task(pq.REMOVED, -25)
-print(pq.pop_item())
+if __name__ == "__main__":
+    pq = PriorityQueue()
+    pq.add_task(pq.REMOVED, -100)
+    pq.add_task(1, -75)
+    pq.add_task(2, -50)
+    pq.add_task(pq.REMOVED, -25)
+    print(pq.pop_item())

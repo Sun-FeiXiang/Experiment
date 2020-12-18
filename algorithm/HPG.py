@@ -1,10 +1,9 @@
 """
-独立级联模型下，度折扣算法 degree discount heuristic [1]
-[1] -- Wei Chen et al. Efficient influence maximization in Social Networks (algorithm 4)
+来源：（HPG）一种新型的社会网络影响最大化算法
+2011年 计算机学报 中文核心 A类
 """
 from algorithm.priorityQueue import PriorityQueue as PQ  # priority queue
 import math
-import networkx
 from algorithm.IC.IC import runIC
 
 
@@ -91,9 +90,9 @@ if __name__ == "__main__":
     import time
 
     start = time.time()
-    from algorithm.graph_data_handle import read_gpickle
+    from data_handle.graph_data_handle import read_gpickle_DiGraph
 
-    G = read_gpickle("../data/graphs/hep.gpickle")
+    G = read_gpickle_DiGraph("../data/graphs/hep.gpickle")
     read_time = time.time()
     print('读取网络时间：', read_time - start)
 

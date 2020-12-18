@@ -1,5 +1,4 @@
 import math
-import networkx as nx
 from InfluenceMax.IC.degreeDiscount import degreeDiscountIC
 from IC.IC import avgSize
 
@@ -72,9 +71,9 @@ if __name__ == '__main__':
     import time
 
     start = time.time()
-    from algorithm.graph_data_handle import read_gpickle
+    from data_handle.graph_data_handle import read_gpickle_DiGraph
 
-    G = read_gpickle("../../data/graphs/hep.gpickle")
+    G = read_gpickle_DiGraph("../../data/graphs/hep.gpickle")
     read_time = time.time()
     print('读取网络时间：', read_time - start)
 
