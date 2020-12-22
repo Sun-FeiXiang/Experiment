@@ -7,7 +7,7 @@ import networkx as nx
 from algorithm.IC.IC import avgIC_cover_size
 from algorithm.IC.degreeDiscount import degreeDiscountIC
 from itertools import combinations
-from algorithm.Spread.NetworkxSpread import spread_run
+from algorithm.Spread.NetworkxSpread import spread_run_IC
 
 if __name__ == '__main__':
     import time
@@ -40,7 +40,7 @@ if __name__ == '__main__':
     for candidate in C:
         #print(candidate)
         #time2spread = time.time()
-        spread[candidate] = spread_run(candidate, G, 1000)
+        spread[candidate] = spread_run_IC(candidate, G, 1000)
         #print(spread[candidate], '花费时间：', time.time() - time2spread)
 
     S, val = max(spread.items())

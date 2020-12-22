@@ -22,7 +22,7 @@ def degreeDiscountIC(G, k, p=.01):
 
     # 初始度折扣
     for u in G.nodes():
-        d[u] = sum([G[u][v]['weight'] for v in G[u]])  # 每条边添加1度
+        d[u] = G.degree[u]
         # d[u] = len(G[u]) # each neighbor adds degree 1
         dd.add_task(u, -d[u])  # 添加每个节点的度数
         t[u] = 0
@@ -33,7 +33,7 @@ def degreeDiscountIC(G, k, p=.01):
         S.append(u)
         for v in G[u]:  # G[u]是u的邻接表
             if v not in S:  # ！！！
-                t[v] += G[u][v]['weight']
+                t[v] += 1
                 priority = d[v] - 2 * t[v] - (d[v] - t[v]) * t[v] * p
                 dd.add_task(v, -priority)
     return S
@@ -95,7 +95,7 @@ if __name__ == "__main__":
     import time
 
     start = time.time()
-    G = nx.read_weighted_edgelist("../../data/NetHEPT.txt", comments='#', nodetype=int, create_using=nx.Graph())
+    G = nx.read_weighted_edgelist("../../data/graphdata/hep.txt", comments='#', nodetype=int, create_using=nx.Graph())
     read_time = time.time()
     print('读取网络时间：', read_time - start)
 
@@ -113,9 +113,9 @@ if __name__ == "__main__":
         print('degreeDiscount算法运行时间：', cal_time)
         print('k = ', k, '选取节点集为：', S)
 
-        from algorithm.Spread.NetworkxSpread import spread_run
+        from algorithm.Spread.NetworkxSpread import spread_run_IIC
 
-        average_cover_size = spread_run(S, G, 1000)
+        average_cover_size = spread_run_IIC(S, G, 1000)
         print('k=', k, '平均覆盖大小：', average_cover_size)
 
         list_IC_random_hep.append({
@@ -129,5 +129,5 @@ if __name__ == "__main__":
     import pandas as pd
 
     df_IC_random_hep = pd.DataFrame(list_IC_random_hep)
-    df_IC_random_hep.to_csv('../../data/output/degreeDiscount/IC_degreeDiscount_NetHEPT_Graph.csv')
+    df_IC_random_hep.to_csv('../../data/output/degreeDiscount/IIC_degreeDiscount_hep_Graph.csv')
     print('文件输出完毕——结束')

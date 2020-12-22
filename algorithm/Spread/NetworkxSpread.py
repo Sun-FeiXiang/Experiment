@@ -3,6 +3,7 @@
 weight是传播概率
 """
 import random
+from copy import deepcopy
 
 
 def IC(S, G):
@@ -59,7 +60,30 @@ def LT(S, G):
     return count
 
 
-def spread_run(S, G, iterations):
+def IIC(S, G):
+    """
+    提升的独立级联模型，v被激活的概率使用
+    1-(1-p)^l   l是邻居中被激活节点的个数
+    :param S:
+    :param G:
+    :return:
+    """
+    T = deepcopy(S)  # 复制已经存在的节点
+    i = 0
+    while i < len(T):
+        for v in G[T[i]]:  # 已选择节点的邻居节点
+            if v not in T:  # 邻居还没有被选为种子节点
+                v_adj = list(G[v].keys())  # v的邻居
+                l = len([a for a in v_adj if a in T])  # v的邻居已经被激活的个数
+                p = G[T[i]][v]['weight']  # 传播概率
+                if random.random() <= 1 - (1 - p) ** l:  # if at least one of edges propagate influence
+                    # print T[i], 'influences', v
+                    T.append(v)
+        i += 1
+    return len(T)
+
+
+def spread_run_IC(S, G, iterations):
     """
     使用network（自定义）网络结构的数据，求传播的平均影响范围
     :param S:
@@ -70,4 +94,18 @@ def spread_run(S, G, iterations):
     avg = 0
     for i in range(iterations):
         avg = avg + float(IC(S, G)) / iterations
+    return avg
+
+
+def spread_run_IIC(S, G, iterations):
+    """
+    使用network（自定义）网络结构的数据，求传播的平均影响范围，使用IIC模型
+    :param S:
+    :param G:
+    :param Ep:
+    :return:
+    """
+    avg = 0
+    for i in range(iterations):
+        avg = avg + float(IIC(S, G)) / iterations
     return avg

@@ -44,9 +44,9 @@ if __name__ == "__main__":
         print('randomHeuristic算法运行时间：', cal_time)
         print('k = ', k, '选取节点集为：', S)
 
-        from algorithm.Spread.NetworkxSpread import spread_run
+        from algorithm.Spread.NetworkxSpread import spread_run_IC
 
-        average_cover_size = spread_run(S, G, 1000)
+        average_cover_size = spread_run_IC(S, G, 1000)
         print('k=', k, '平均覆盖大小：', average_cover_size)
 
         list_IC_random_hep.append({

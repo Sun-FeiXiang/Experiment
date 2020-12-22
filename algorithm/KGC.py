@@ -142,9 +142,9 @@ if __name__ == "__main__":
         cal_time = timer() - temp_time
         print('KGC算法运行时间：', cal_time)
         print('选取节点集为：', S)
-        from algorithm.Spread.NetworkxSpread import spread_run
+        from algorithm.Spread.NetworkxSpread import spread_run_IC
 
-        average_cover_size = spread_run(S, G, I)
+        average_cover_size = spread_run_IC(S, G, I)
         print('k =', k, ', f = 0','平均覆盖大小：', average_cover_size)
         result.append({
             'k': k,
