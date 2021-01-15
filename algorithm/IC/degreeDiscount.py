@@ -6,6 +6,7 @@ from algorithm.priorityQueue import PriorityQueue as PQ  # priority queue
 from timeit import default_timer as timer
 import networkx as nx
 
+
 def degreeDiscountIC(G, k, p=.01):
     """
     在独立级联模型中查找要传播的初始节点集（带优先级队列）
@@ -99,35 +100,49 @@ if __name__ == "__main__":
     read_time = time.time()
     print('读取网络时间：', read_time - start)
 
-    # 生成固定的传播概率0.01
+    # 生成固定的传播概率
     from generation.generation_propagation_probability import weight_probability_fixed
-    weight_probability_fixed(G)
+
+    weight_probability_fixed(G, 0.01)
 
     I = 1000
-
-    list_IC_random_hep = []
+    result = []
     temp_time = timer()
-    for k in range(1, 51):
-        S = degreeDiscountIC(G, k)
-        cal_time = timer() - temp_time
-        print('degreeDiscount算法运行时间：', cal_time)
-        print('k = ', k, '选取节点集为：', S)
+    k = 44
+    S = degreeDiscountIC(G, k)
+    cal_time = timer() - temp_time
+    print('degreeDiscount算法运行时间：', cal_time)
+    print('k = ', k, '选取节点集为：', S)
+    from algorithm.Spread.Networkx_spread import spread_run_IIC
 
-        from algorithm.Spread.NetworkxSpread import spread_run_IIC
+    average_cover_size = spread_run_IIC(S, G, 1000)
+    print('k=', k, '平均覆盖大小：', average_cover_size)
 
-        average_cover_size = spread_run_IIC(S, G, 1000)
-        print('k=', k, '平均覆盖大小：', average_cover_size)
-
-        list_IC_random_hep.append({
-            'k': k,
-            'run time': cal_time,
-            'average cover size': average_cover_size,
-            'S': S
-        })
-        temp_time = timer()  # 记录当前时间
-
-    import pandas as pd
-
-    df_IC_random_hep = pd.DataFrame(list_IC_random_hep)
-    df_IC_random_hep.to_csv('../../data/output/degreeDiscount/IIC_degreeDiscount_hep_Graph.csv')
-    print('文件输出完毕——结束')
+    # I = 1000
+    #
+    # list_IC_random_hep = []
+    # temp_time = timer()
+    # for k in range(1, 51):
+    #     S = degreeDiscountIC(G, k)
+    #     cal_time = timer() - temp_time
+    #     print('degreeDiscount算法运行时间：', cal_time)
+    #     print('k = ', k, '选取节点集为：', S)
+    #
+    #     from algorithm.Spread.NetworkxSpread import spread_run_IC
+    #
+    #     average_cover_size = spread_run_IC(S, G, 1000)
+    #     print('k=', k, '平均覆盖大小：', average_cover_size)
+    #
+    #     list_IC_random_hep.append({
+    #         'k': k,
+    #         'run time': cal_time,
+    #         'average cover size': average_cover_size,
+    #         'S': S
+    #     })
+    #     temp_time = timer()  # 记录当前时间
+    #
+    # import pandas as pd
+    #
+    # df_IC_random_hep = pd.DataFrame(list_IC_random_hep)
+    # df_IC_random_hep.to_csv('../../data/output/degreeDiscount/IC_degreeDiscount_phy_Graph.csv')
+    # print('文件输出完毕——结束')

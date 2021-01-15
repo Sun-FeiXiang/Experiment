@@ -7,7 +7,7 @@ import networkx as nx
 from algorithm.IC.IC import avgIC_cover_size
 from algorithm.IC.degreeDiscount import degreeDiscountIC
 from itertools import combinations
-from algorithm.Spread.NetworkxSpread import spread_run_IC
+from algorithm.Spread.Networkx_spread import spread_run_IC
 
 if __name__ == '__main__':
     import time

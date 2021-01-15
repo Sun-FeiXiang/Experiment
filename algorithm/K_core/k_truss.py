@@ -28,8 +28,14 @@ def k_truss(G):
             if (node, end_node) in edge_truss.keys() and max_truss < edge_truss[(node, end_node)]:
                 max_truss = edge_truss[(node, end_node)]
         node_truss[node] = max_truss
+
+    return node_truss
+
+
+def K_truss_sorted(G):
+    node_truss = k_truss(G)
     node_truss = sorted(node_truss.items(), key=lambda A: A[1], reverse=True)
-    # 转换格式
+    #转换格式
     result = dict()
     for node_truss_line in node_truss:
         if node_truss_line[1] not in result.keys():
@@ -65,7 +71,6 @@ def get_R_set(G, node):
     return activity_nodes
 
 
-
 def get_local_influence(G, node_list):
     """
     获取局部影响力
@@ -77,11 +82,12 @@ def get_local_influence(G, node_list):
     node_inf_dict = dict()
     for node in node_list:
         stand = G.out_degree(node) - G.in_degree(node)  # 坚定系数，影响还是被影响 O(k)
-        cur_R_set = get_R_set(G,node)#O(mn)
+        cur_R_set = get_R_set(G, node)  # O(mn)
         node_inf_dict[node] = stand * cur_R_set
-    node_inf_list = sorted(node_inf_dict.items(),key=lambda A:A[1],reverse=True)#按照影响力排序
+    node_inf_list = sorted(node_inf_dict.items(), key=lambda A: A[1], reverse=True)  # 按照影响力排序
     result = [node[0] for node in node_inf_list]
     return result
+
 
 if __name__ == "__main__":
     import time
@@ -96,6 +102,6 @@ if __name__ == "__main__":
     weight_probability_fixed(G, 0.01)
 
     k_truss = k_truss(G)
-    for a,b in k_truss.items():
-        c = get_local_influence(G,b)
+    for a, b in k_truss.items():
+        c = get_local_influence(G, b)
         print(c)

@@ -26,7 +26,7 @@ if __name__ == "__main__":
     import time
 
     start = time.time()
-    G = nx.read_weighted_edgelist("../../data/NetPHY.txt", comments='#', nodetype=int, create_using=nx.Graph())
+    G = nx.read_weighted_edgelist("../../data/graphdata/phy.txt", comments='#', nodetype=int, create_using=nx.Graph())
     read_time = time.time()
     print('读取网络时间：', read_time - start)
 
@@ -38,27 +38,31 @@ if __name__ == "__main__":
 
     list_IC_random_hep = []
     temp_time = timer()
-    for k in range(1, 51):
-        S = randomHeuristic(G, k)
-        cal_time = timer() - temp_time
-        print('randomHeuristic算法运行时间：', cal_time)
-        print('k = ', k, '选取节点集为：', S)
+    k = 50
+    S = randomHeuristic(G, k)
+    cal_time = timer() - temp_time
 
-        from algorithm.Spread.NetworkxSpread import spread_run_IC
+    for i in range(1, 51):
+        s = S[0:i]
+        run_time = cal_time/50*(i+1)
+        print('randomHeuristic算法运行时间：', run_time)
+        print('k = ', i, '选取节点集为：', s)
 
-        average_cover_size = spread_run_IC(S, G, 1000)
-        print('k=', k, '平均覆盖大小：', average_cover_size)
+        from algorithm.Spread.Networkx_spread import spread_run_IIC
+
+        average_cover_size = spread_run_IIC(s, G, 1000)
+        print('k=', i, '平均覆盖大小：', average_cover_size)
 
         list_IC_random_hep.append({
-            'k': k,
-            'run time': cal_time,
+            'k': i,
+            'run time': run_time,
             'average cover size': average_cover_size,
-            'S': S
+            'S': s
         })
         temp_time = timer()  # 记录当前时间
 
     import pandas as pd
 
     df_IC_random_hep = pd.DataFrame(list_IC_random_hep)
-    df_IC_random_hep.to_csv('../../data/output/random/IC_random_NetPHY_Graph.csv')
+    df_IC_random_hep.to_csv('../../data/output/random/IIC_random_phy_Graph.csv')
     print('文件输出完毕——结束')

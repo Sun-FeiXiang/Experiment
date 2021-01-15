@@ -1,7 +1,9 @@
 from algorithm.K_core.k_core_subgraph import find_kcores
 from timeit import default_timer as timer
 import networkx as nx
-def mark_overlay(G, node, CO_v, d=1):
+
+
+def mark_overlay(G, node, CO_v, d=3):
     """
     使用bfs覆盖
     :param G: networkx对象
@@ -54,9 +56,10 @@ def CCA(G, k, p=0.01, d=1):
             break
     return S
 
+
 def sumTrue(CO_v):
     num = 0
-    for key,value in CO_v.items():
+    for key, value in CO_v.items():
         if value == True:
             num = num + 1
     return num
@@ -66,13 +69,14 @@ if __name__ == "__main__":
     import time
 
     start = time.time()
-    G = nx.read_weighted_edgelist("../../data/soc-Epinions1.txt", comments='#', nodetype=int, create_using=nx.DiGraph())
+    G = nx.read_weighted_edgelist("../../data/graphdata/hep.txt", comments='#', nodetype=int, create_using=nx.DiGraph())
     read_time = time.time()
     print('读取网络时间：', read_time - start)
 
     # 生成固定的传播概率
-    from generation.generation_propagation_probability import weight_probability_inEdge
-    weight_probability_inEdge(G)
+    from generation.generation_propagation_probability import weight_probability_fixed
+
+    weight_probability_fixed(G)
 
     I = 1000
     result = []
@@ -82,7 +86,7 @@ if __name__ == "__main__":
         cal_time = timer() - temp_time
         print('CCA算法运行时间：', cal_time)
         print('选取节点集为：', S)
-        from algorithm.Spread.NetworkxSpread import spread_run_IC
+        from algorithm.Spread.Networkx_spread import spread_run_IC
 
         average_cover_size = spread_run_IC(S, G, I)
         print('k =', k, ', f = 0', '平均覆盖大小：', average_cover_size)
@@ -96,5 +100,5 @@ if __name__ == "__main__":
     import pandas as pd
 
     df_result = pd.DataFrame(result)
-    df_result.to_csv('../../data/output/CCA/IC_CCA_Epinions.csv')
+    df_result.to_csv('../../data/output/CCA/IC_CCA_hep_Graph.csv')
     print('文件输出完毕——结束')

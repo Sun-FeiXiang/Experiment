@@ -38,7 +38,7 @@ if __name__ == "__main__":
     import time
 
     start = time.time()
-    G = nx.read_weighted_edgelist("../../data/NetHEPT.txt", comments='#', nodetype=int, create_using=nx.DiGraph())
+    G = nx.read_weighted_edgelist("../../data/NetHEPT.txt", comments='#', nodetype=int, create_using=nx.Graph())
     read_time = time.time()
     print('读取网络时间：', read_time - start)
 
@@ -49,29 +49,35 @@ if __name__ == "__main__":
 
     I = 1000
 
-    list_IC_random_hep = []
-    temp_time = timer()
-    for k in range(1, 51):
-        S = generalGreedy(G, k)
-        cal_time = timer() - temp_time
-        print('generalGreedy算法运行时间：', cal_time)
-        print('k = ', k, '选取节点集为：', S)
+    k = 30
+    S = generalGreedy(G, k)
+    from algorithm.Spread.Networkx_spread import spread_run_IC
+    average_cover_size = spread_run_IC(S, G, 1000)
+    print('k=', k, '平均覆盖大小：', average_cover_size)
 
-        from algorithm.Spread.NetworkxSpread import spread_run_IC
-
-        average_cover_size = spread_run_IC(S, G, 1000)
-        print('k=', k, '平均覆盖大小：', average_cover_size)
-
-        list_IC_random_hep.append({
-            'k': k,
-            'run time': cal_time,
-            'average cover size': average_cover_size,
-            'S': S
-        })
-        temp_time = timer()  # 记录当前时间
-
-    import pandas as pd
-
-    df_IC_random_hep = pd.DataFrame(list_IC_random_hep)
-    df_IC_random_hep.to_csv('../../data/output/greedy/IC_generalGreedy_NetHEPT.csv')
-    print('文件输出完毕——结束')
+    # list_IC_random_hep = []
+    # temp_time = timer()
+    # for k in range(1, 51):
+    #     S = generalGreedy(G, k)
+    #     cal_time = timer() - temp_time
+    #     print('generalGreedy算法运行时间：', cal_time)
+    #     print('k = ', k, '选取节点集为：', S)
+    #
+    #     from algorithm.Spread.NetworkxSpread import spread_run_IC
+    #
+    #     average_cover_size = spread_run_IC(S, G, 1000)
+    #     print('k=', k, '平均覆盖大小：', average_cover_size)
+    #
+    #     list_IC_random_hep.append({
+    #         'k': k,
+    #         'run time': cal_time,
+    #         'average cover size': average_cover_size,
+    #         'S': S
+    #     })
+    #     temp_time = timer()  # 记录当前时间
+    #
+    # import pandas as pd
+    #
+    # df_IC_random_hep = pd.DataFrame(list_IC_random_hep)
+    # df_IC_random_hep.to_csv('../../data/output/greedy/IC_generalGreedy_NetHEPT.csv')
+    # print('文件输出完毕——结束')
