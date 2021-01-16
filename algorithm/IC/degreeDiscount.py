@@ -23,7 +23,7 @@ def degreeDiscountIC(G, k, p=.01):
 
     # 初始度折扣
     for u in G.nodes():
-        d[u] = G.degree[u]
+        d[u] = sum([G[u][v]['weight'] for v in G[u]])
         # d[u] = len(G[u]) # each neighbor adds degree 1
         dd.add_task(u, -d[u])  # 添加每个节点的度数
         t[u] = 0
@@ -34,7 +34,7 @@ def degreeDiscountIC(G, k, p=.01):
         S.append(u)
         for v in G[u]:  # G[u]是u的邻接表
             if v not in S:  # ！！！
-                t[v] += 1
+                t[v] += G[u][v]['weight']
                 priority = d[v] - 2 * t[v] - (d[v] - t[v]) * t[v] * p
                 dd.add_task(v, -priority)
     return S
@@ -79,7 +79,7 @@ def degreeDiscountStar(G, k, p=.01):
         d[u] = sum([G[u][v]['weight'] for v in G[u]])
         t[u] = 0
         score = -((1 - p) ** t[u]) * (1 + (d[u] - t[u]) * p)
-        scores.add_task(u, )
+        scores.add_task(u, score)
     for iteration in range(k):
         u, priority = scores.pop_item()
         print(iteration, -priority)
@@ -96,53 +96,49 @@ if __name__ == "__main__":
     import time
 
     start = time.time()
-    G = nx.read_weighted_edgelist("../../data/graphdata/hep.txt", comments='#', nodetype=int, create_using=nx.Graph())
+    from algorithm.data_handle.read_Graph_networkx import read_Graph
+
+    G = read_Graph('../../data/graphdata/phy.txt')
     read_time = time.time()
     print('读取网络时间：', read_time - start)
 
-    # 生成固定的传播概率
-    from generation.generation_propagation_probability import weight_probability_fixed
-
-    weight_probability_fixed(G, 0.01)
+    # 单次测试
+    # I = 1000
+    # result = []
+    # temp_time = timer()
+    # k = 44
+    # S = degreeDiscountIC(G, k)
+    # cal_time = timer() - temp_time
+    # print('degreeDiscount算法运行时间：', cal_time)
+    # print('k = ', k, '选取节点集为：', S)
+    # from algorithm.Spread.Networkx_spread import spread_run_IC
+    #
+    # average_cover_size = spread_run_IC(G,S,0.01,1000)
+    # print('k=', k, '平均覆盖大小：', average_cover_size)
 
     I = 1000
-    result = []
+
+    list_IC_hep = []
     temp_time = timer()
-    k = 44
-    S = degreeDiscountIC(G, k)
-    cal_time = timer() - temp_time
-    print('degreeDiscount算法运行时间：', cal_time)
-    print('k = ', k, '选取节点集为：', S)
-    from algorithm.Spread.Networkx_spread import spread_run_IIC
+    for k in range(1, 51):
+        S = degreeDiscountIC(G, k)
+        cal_time = timer() - temp_time
+        print('degreeDiscount算法运行时间：', cal_time)
+        print('k = ', k, '选取节点集为：', S)
+        from algorithm.Spread.Networkx_spread import spread_run_IC
 
-    average_cover_size = spread_run_IIC(S, G, 1000)
-    print('k=', k, '平均覆盖大小：', average_cover_size)
+        average_cover_size = spread_run_IC(G, S, 0.01, 1000)
+        print('k=', k, '平均覆盖大小：', average_cover_size)
+        list_IC_hep.append({
+            'k': k,
+            'run time': cal_time,
+            'average cover size': average_cover_size,
+            'S': S
+        })
+        temp_time = timer()  # 记录当前时间
 
-    # I = 1000
-    #
-    # list_IC_random_hep = []
-    # temp_time = timer()
-    # for k in range(1, 51):
-    #     S = degreeDiscountIC(G, k)
-    #     cal_time = timer() - temp_time
-    #     print('degreeDiscount算法运行时间：', cal_time)
-    #     print('k = ', k, '选取节点集为：', S)
-    #
-    #     from algorithm.Spread.NetworkxSpread import spread_run_IC
-    #
-    #     average_cover_size = spread_run_IC(S, G, 1000)
-    #     print('k=', k, '平均覆盖大小：', average_cover_size)
-    #
-    #     list_IC_random_hep.append({
-    #         'k': k,
-    #         'run time': cal_time,
-    #         'average cover size': average_cover_size,
-    #         'S': S
-    #     })
-    #     temp_time = timer()  # 记录当前时间
-    #
-    # import pandas as pd
-    #
-    # df_IC_random_hep = pd.DataFrame(list_IC_random_hep)
-    # df_IC_random_hep.to_csv('../../data/output/degreeDiscount/IC_degreeDiscount_phy_Graph.csv')
-    # print('文件输出完毕——结束')
+    import pandas as pd
+
+    df_IC_random_hep = pd.DataFrame(list_IC_hep)
+    df_IC_random_hep.to_csv('../../data/output/degreeDiscount/IC_degreeDiscount_phy_Graph.csv')
+    print('文件输出完毕——结束')

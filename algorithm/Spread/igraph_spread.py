@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def IC(g, S, p=0.5, mc=1000):
+def IC(g, S, p=0.01, mc=1000):
     """
     Input:  graph object, set of seed nodes, propagation probability
             and the number of Monte-Carlo simulations

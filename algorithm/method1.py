@@ -65,9 +65,9 @@ def get_total_out_edge_weight(G):
     for node in G.nodes:
         out_edges = G.out_edges(node, data='weight')
         w = 0
-        for out_edge in out_edges:
-            w = w + out_edge[2]
-        total_weight[node] = w
+        for _ in out_edges:
+            w = w + 1
+        total_weight[node] = w * 0.01
     return total_weight
 
 
@@ -75,16 +75,10 @@ if __name__ == "__main__":
     import time
 
     start = time.time()
-    G = nx.read_weighted_edgelist("../data/graphdata/hep.txt", comments='#', nodetype=int, create_using=nx.DiGraph())
+    from algorithm.data_handle.read_Graph_networkx import read_Graph
+    G = read_Graph("../data/graphdata/hep.txt",directed=True)
     read_time = time.time()
     print('读取网络时间：', read_time - start)
-
-    # 生成固定的传播概率为0.01
-    from generation.generation_propagation_probability import weight_probability_fixed
-
-    weight_probability_fixed(G)
-
-    I = 1000
 
     list_IC_random_hep = []
     temp_time = timer()
@@ -92,7 +86,7 @@ if __name__ == "__main__":
     S = LI(G, 30)
     from algorithm.Spread.Networkx_spread import spread_run_IC
 
-    average_cover_size = spread_run_IC(S, G, 1000)
+    average_cover_size = spread_run_IC(G,S, 0.01,1000)
     print('平均覆盖大小：', average_cover_size)
 
 

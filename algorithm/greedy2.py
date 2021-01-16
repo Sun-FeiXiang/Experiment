@@ -10,30 +10,7 @@ import random
 from algorithm.priorityQueue import PriorityQueue as PQ
 from timeit import default_timer as timer
 import math
-
-
-def IC(S, G):
-    """
-    实现独立级联模型。
-    节点尝试激活它的所有邻居（每个只尝试激活一次），然后新激活的节点再尝试激活它们的邻居，
-    重复该过程直到没有节点再可以被激活。
-    """
-    result = []
-    activity_set = set(S)
-    active_nodes = set(S)
-    while activity_set:
-        new_activity_set = set()
-        for seed in activity_set:
-            neighbors = G.adj[seed]
-            for node in neighbors.keys():
-                weight = neighbors[node]['weight'] * 5  # 放大影响
-                if node not in active_nodes:
-                    if random.random() < weight:
-                        active_nodes.add(node)
-                        new_activity_set.add(node)
-        result.extend(list(new_activity_set))
-        activity_set = new_activity_set
-    return result
+from algorithm.Spread.Networkx_spread import runIC
 
 
 def get_node_influence_node(G, S, R):
@@ -48,7 +25,7 @@ def get_node_influence_node(G, S, R):
     node_frequency = dict()  # 记录节点出现的频率
     avg_len = 0
     for i in range(R):
-        influence_set = IC(S, G)  # 影响的节点集合
+        influence_set = runIC(G,S,0.01)  # 影响的节点集合
         if len(influence_set) != 0:  # 影响的节点不为空集
             avg_len = avg_len + len(influence_set) / R  # 平均影响大小
             for influence_node in influence_set:
@@ -82,7 +59,7 @@ def get_node_influence_set(G):
     """
     node_influence_set = dict()
     for node in G.nodes:
-        node_influence_set[node] = get_node_influence_node(G, [node], 10000)
+        node_influence_set[node] = get_node_influence_node(G, [node], 100)
 
     return node_influence_set
 
@@ -162,17 +139,12 @@ def greedy(G, k):
 
 if __name__ == "__main__":
     import time
-
     start = time.time()
-    G = nx.read_weighted_edgelist("../data/NetHEPT.txt", comments='#', nodetype=int, create_using=nx.DiGraph())
-
+    from algorithm.data_handle.read_Graph_networkx import read_Graph
+    G = read_Graph("../data/graphdata/hep.txt", directed=True)
     read_time = time.time()
     print('读取网络时间：', read_time - start)
 
-    # 生成固定的传播概率为0.01
-    from generation.generation_propagation_probability import weight_probability_fixed
-
-    weight_probability_fixed(G, 0.01)
     E = G.copy()
     temp_time = timer()
     k = 50
@@ -184,7 +156,7 @@ if __name__ == "__main__":
     # S = [6142, 42819, 66135, 66689, 18844, 16164, 30744, 5138, 38112, 40803, 49418, 36860, 63707, 20394, 29595, 57433, 1441, 14906, 23420, 49295, 43226, 41221, 16164, 30160, 23420, 3423, 19660, 48570, 45319, 1441, 57878, 11599, 11850, 1441, 11850, 48570, 12334, 17370, 6975, 51706, 28083, 29595, 11180, 26913, 14642, 2410, 43686, 38614, 11913, 3624]
     from algorithm.Spread.Networkx_spread import spread_run_IC
 
-    average_cover_size = spread_run_IC(S, E, 1000)
+    average_cover_size = spread_run_IC(E,S,0.01,1000)
     print('k=', k, '平均覆盖大小：', average_cover_size)
 
     # list_IC_random_hep = []
