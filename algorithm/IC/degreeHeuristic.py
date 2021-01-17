@@ -56,6 +56,7 @@ if __name__ == "__main__":
 
     start = time.time()
     from algorithm.data_handle.read_Graph_networkx import read_Graph
+
     G = read_Graph("../../data/graphdata/phy.txt")
     read_time = time.time()
     print('读取网络时间：', read_time - start)
@@ -75,7 +76,7 @@ if __name__ == "__main__":
 
     list_IC_hep = []
     temp_time = timer()
-    #S = degreeHeuristic(G, 10)
+    # S = degreeHeuristic(G, 10)
     for k in range(1, 51):
         S = degreeHeuristic(G, k)
         cal_time = timer() - temp_time
@@ -84,7 +85,7 @@ if __name__ == "__main__":
 
         from algorithm.Spread.Networkx_spread import spread_run_IC
 
-        average_cover_size = spread_run_IC(G,S,0.01, 1000)
+        average_cover_size = spread_run_IC(G, S, 0.01, 1000)
         print('k=', k, '平均覆盖大小：', average_cover_size)
 
         list_IC_hep.append({

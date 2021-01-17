@@ -51,8 +51,8 @@ if __name__ == "__main__":
     # degrees = g.degree()
 
     # Plot graph
-    g.vs["label"], g.es["color"], g.vs["color"] = range(10), "#B3CDE3", "#FBB4AE"
-    plot(g, bbox=(200, 200), margin=20, layout=g.layout("kk")).save("a.png")
+    # g.vs["label"], g.es["color"], g.vs["color"] = range(10), "#B3CDE3", "#FBB4AE"
+    # plot(g, bbox=(200, 200), margin=20, layout=g.layout("kk")).save("a.png")
 
     greedy_output = greedy(g, 2, p=0.2, mc=1000)
     print("greedy output: " + str(greedy_output[0]))

@@ -16,10 +16,10 @@ def singleDiscount(G, k):
     Output:
     S -- 选择的k个点的集合
     """
-    S = []  # 激活的节点集
+    S = []  # set of activated nodes
     d = PQ()  # degrees
     for u in G:
-        degree = G.degree[u]
+        degree = sum([G[u][v]['weight'] for v in G[u]])
         d.add_task(u, -degree)
     for i in range(k):
         u, priority = d.pop_item()
@@ -27,7 +27,7 @@ def singleDiscount(G, k):
         for v in G[u]:
             if v not in S:
                 [priority, count, task] = d.entry_finder[v]
-                d.add_task(v, priority + G.degree[v])  # discount degree by the weight of the edge
+                d.add_task(v, priority + G[u][v]['weight'])  # discount degree by the weight of the edge
     return S
 
 
@@ -35,18 +35,12 @@ if __name__ == "__main__":
     import time
 
     start = time.time()
-    G = nx.read_weighted_edgelist("../../data/graphdata/phy.txt", comments='#', nodetype=int, create_using=nx.Graph())
+    from algorithm.data_handle.read_Graph_networkx import read_Graph
+    G = read_Graph('../../data/graphdata/phy.txt')
     read_time = time.time()
     print('读取网络时间：', read_time - start)
 
-    # 生成固定的传播概率0.01
-    from generation.generation_propagation_probability import weight_probability_fixed
-
-    weight_probability_fixed(G)
-
-    I = 1000
-
-    list_IC_random_hep = []
+    list_IC_hep = []
     temp_time = timer()
     for k in range(1, 51):
         S = singleDiscount(G, k)
@@ -56,10 +50,10 @@ if __name__ == "__main__":
 
         from algorithm.Spread.Networkx_spread import spread_run_IC
 
-        average_cover_size = spread_run_IC(S, G, 1000)
+        average_cover_size = spread_run_IC(G,S,0.01,1000)
         print('k=', k, '平均覆盖大小：', average_cover_size)
 
-        list_IC_random_hep.append({
+        list_IC_hep.append({
             'k': k,
             'run time': cal_time,
             'average cover size': average_cover_size,
@@ -69,6 +63,6 @@ if __name__ == "__main__":
 
     import pandas as pd
 
-    df_IC_random_hep = pd.DataFrame(list_IC_random_hep)
+    df_IC_random_hep = pd.DataFrame(list_IC_hep)
     df_IC_random_hep.to_csv('../../data/output/singleDiscount/IC_singleDiscount_phy_Graph.csv')
     print('文件输出完毕——结束')

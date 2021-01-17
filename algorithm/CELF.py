@@ -1,55 +1,42 @@
-import matplotlib.pyplot as plt
-from random import uniform, seed
-import numpy as np
-import time
 from igraph import *
+from timeit import default_timer as timer
+from algorithm.Spread.Networkx_spread import spread_run_IC
+import networkx as nx
 
-from algorithm.Spread.igraph_spread import IC
 
-
-def celf(g, k, p=0.1, mc=1000):
+def CELF(G, k, p=0.1, mc=1000):
     """
     Input:  graph object, number of seed nodes
     Output: optimal seed set, resulting spread, time for each iteration
     """
-
     # --------------------
     # 用贪心算法寻找第一个节点
     # --------------------
-
     # 计算第一次迭代排序列表
     start_time = time.time()
-    marg_gain = [IC(g, [node], p, mc) for node in range(g.vcount())]
-
-    # Create the sorted list of nodes and their marginal gain
-    Q = sorted(zip(range(g.vcount()), marg_gain), key=lambda x: x[1], reverse=True)
-
-    # Select the first node and remove from candidate list
+    marg_gain = [spread_run_IC(G, [node], p, mc) for node in G.nodes()]
+    #print(marg_gain)
+    # 创建节点及其边际收益的排序列表
+    Q = sorted(zip(G.nodes(), marg_gain), key=lambda x: x[1], reverse=True)
+    #print(Q)
+    # 选择第一个节点并从候选列表中删除
     S, spread, SPREAD = [Q[0][0]], Q[0][1], [Q[0][1]]
-    Q, LOOKUPS, timelapse = Q[1:], [g.vcount()], [time.time() - start_time]
-
+    Q, LOOKUPS, timelapse = Q[1:], [nx.number_of_nodes(G)], [time.time() - start_time]
     # --------------------
-    # Find the next k-1 nodes using the list-sorting procedure
+    # 使用列表排序过程查找下一个k-1节点
     # --------------------
-
     for _ in range(k - 1):
-
         check, node_lookup = False, 0
-
         while not check:
-            # Count the number of times the spread is computed
+            # 计算传播计算的次数
             node_lookup += 1
-
-            # Recalculate spread of top node
+            # 重新计算顶部节点的传播
             current = Q[0][0]
-
-            # Evaluate the spread function and store the marginal gain in the list
-            Q[0] = (current, IC(g, S + [current], p, mc) - spread)
-
-            # Re-sort the list
+            # 评价传播函数并且存储边际收益到list中
+            Q[0] = (current, spread_run_IC(G, S + [current], p, mc) - spread)
+            # 重新对list进行排序
             Q = sorted(Q, key=lambda x: x[1], reverse=True)
-
-            # Check if previous top node stayed on top after the sort
+            # 检查顶点排序后是否保持不变
             check = (Q[0][0] == current)
 
         # Select the next node
@@ -58,8 +45,7 @@ def celf(g, k, p=0.1, mc=1000):
         SPREAD.append(spread)
         LOOKUPS.append(node_lookup)
         timelapse.append(time.time() - start_time)
-
-        # Remove the selected node from the list
+        # 从list中移除已经选择的节点
         Q = Q[1:]
 
     return (S, SPREAD, timelapse, LOOKUPS)
@@ -81,7 +67,31 @@ def test_igraph():
 
 
 if __name__ == "__main__":
-    g = Graph.Read_Ncol("../data/graphdata/hep.txt")
+    import time
+    start = time.time()
+    from algorithm.data_handle.read_Graph_networkx import read_Graph
+    G = read_Graph("../data/graphdata/hep.txt")
+    read_time = time.time()
+    print('读取网络时间：', read_time - start)
+    celf_output = CELF(G, 50, p=0.01, mc=1000)
+    # print("greedy output: " + str(greedy_output[0]))
+    list_IC_hep = []
+    for k in range(1, 51):
+        S = celf_output[0][:k]
+        cur_spread = celf_output[1][k - 1]
+        cal_time = celf_output[2][k - 1]
+        print('newGreedyIC算法运行时间：', cal_time)
+        print('k = ', k, '选取节点集为：', S)
+        print('k=', k, '平均覆盖大小：', cur_spread)
+        list_IC_hep.append({
+            'k': k,
+            'run time': cal_time,
+            'average cover size': cur_spread,
+            'S': S
+        })
+        temp_time = timer()  # 记录当前时间
+    import pandas as pd
 
-    greedy_output = celf(g, 20, p=0.2, mc=1000)
-    print("greedy output: " + str(greedy_output[0]))
+    df_IC_hep = pd.DataFrame(list_IC_hep)
+    df_IC_hep.to_csv('../../data/output/greedy/IC_CELF_hep_Graph.csv')
+    print('文件输出完毕——结束')

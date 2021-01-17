@@ -1,6 +1,6 @@
 """
-算法：IC模型中的greedy heuristic
-来源：[1] -- Wei Chen et al. Efficient Influence Maximization in Social Networks (Algorithm 2)
+算法：IC模型中的newGreedyIC
+来源：[1] -- Wei Chen et al. Efficient Influence Maximization in Social Networks (Algorithm 3)
 
 无向图
 
@@ -10,6 +10,7 @@ from copy import deepcopy
 import random
 import networkx as nx
 from timeit import default_timer as timer
+from algorithm.Spread.Networkx_spread import spread_run_IC
 
 
 def bfs(E, S):
@@ -53,72 +54,87 @@ def bfs2(E, node):
     return res
 
 
-def findCCs(G):
+def findCCs(G, Ep):
     # 从图G中移除阻塞边，获得传播图
     E = deepcopy(G)
-    edge_rem = [e for e in E.edges() if random.random() < (1 - E[e[0]][e[1]]['weight'])]
+    edge_rem = [e for e in E.edges() if random.random() < (1 - Ep[e]) ** (E[e[0]][e[1]]['weight'])]
     E.remove_edges_from(edge_rem)
     # 初始化 CC
-    CCs = dict()  # 每个组件都反映了组件的成员数
-    # BFS获得CCs
-    for node in E.nodes():
-        CCs[node] = bfs2(E, node)
+    CCs = dict()  # each component is reflection of the number of a component to its members
+    explored = dict(zip(E.nodes(), [False] * len(E)))
+    c = 0
+    # perform BFS to discover CC
+    for node in E:
+        if not explored[node]:
+            c += 1
+            explored[node] = True
+            CCs[c] = [node]
+            component = list(E[node].keys())
+            for neighbor in component:
+                if not explored[neighbor]:
+                    explored[neighbor] = True
+                    CCs[c].append(neighbor)
+                    component.extend(E[neighbor].keys())
     return CCs
 
 
-def newGreedyIC(G, k, R=20):
-    S = []
+def newGreedyIC(G, k, Ep, R=20):
+    S, spread, timelapse, start_time = [], [], [], timer()
     for i in range(k):
-        # print('k=',i)
         scores = {v: 0 for v in G}
         for j in range(R):
-            CCs = findCCs(G)
-            for v in CCs:
-                if v not in S:
-                    scores[v] += float(len(CCs[v])) / R
-        max_v = sorted(scores,key=lambda x:scores[x])[-1]
-        max_score = scores[max_v]
+            CCs = findCCs(G, Ep)
+            # print(CCs)
+            for CC in CCs.values():
+                # print(CC)
+                for v in S:
+                    if v in CC:
+                        break
+                else:  # in case CC doesn't have node from S
+                    for u in CC:
+                        scores[u] += float(len(CC)) / R
+        max_v, max_score = max(scores.items(), key=lambda x: x[1])
+        # print(max_v, max_score)
         S.append(max_v)
-    return S
+        cur_spread = spread_run_IC(G, S, 0.01, 1000)
+        spread.append(cur_spread)
+        cal_time = timer() - start_time
+        timelapse.append(cal_time)
+    return (S, spread, timelapse)
 
 
 if __name__ == "__main__":
     import time
 
     start = time.time()
-    G = nx.read_weighted_edgelist("../../data/graphdata/phy.txt", comments='#', nodetype=int, create_using=nx.Graph())
+    from algorithm.data_handle.read_Graph_networkx import read_Graph
+
+    G = read_Graph('../../data/graphdata/phy.txt')
     read_time = time.time()
     print('读取网络时间：', read_time - start)
+    # 生成固定的传播概率
+    from algorithm.generation.generation_propagation_probability import fixed_probability
 
-    # 生成固定的传播概率0.01
-    from generation.generation_propagation_probability import weight_probability_fixed
+    Ep = fixed_probability(G, 0.01)
+    list_IC_hep = []
+    out_put = newGreedyIC(G, 50, Ep)
 
-    weight_probability_fixed(G)
-
-    I = 1000
-    list_IC_random_hep = []
-    temp_time = timer()
     for k in range(1, 51):
-        S = newGreedyIC(G, k)
-        cal_time = timer() - temp_time
+        S = out_put[0][:k]
+        cur_spread = out_put[1][k - 1]
+        cal_time = out_put[2][k - 1]
         print('newGreedyIC算法运行时间：', cal_time)
         print('k = ', k, '选取节点集为：', S)
-
-        from algorithm.Spread.Networkx_spread import spread_run_IC
-
-        average_cover_size = spread_run_IC(S, G, 1000)
-        print('k=', k, '平均覆盖大小：', average_cover_size)
-
-        list_IC_random_hep.append({
+        print('k=', k, '平均覆盖大小：', cur_spread)
+        list_IC_hep.append({
             'k': k,
             'run time': cal_time,
-            'average cover size': average_cover_size,
+            'average cover size': cur_spread,
             'S': S
         })
         temp_time = timer()  # 记录当前时间
-
     import pandas as pd
 
-    df_IC_random_hep = pd.DataFrame(list_IC_random_hep)
+    df_IC_random_hep = pd.DataFrame(list_IC_hep)
     df_IC_random_hep.to_csv('../../data/output/greedy/IC_newGreedyIC_phy_Graph.csv')
     print('文件输出完毕——结束')
