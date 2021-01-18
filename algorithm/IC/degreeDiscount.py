@@ -2,12 +2,13 @@
 独立级联模型下，度折扣算法 degree discount heuristic [1]
 [1] -- Wei Chen et al. Efficient influence maximization in Social Networks (algorithm 4)
 """
+from Spread.Networkx_spread import spread_run_IC
 from algorithm.priorityQueue import PriorityQueue as PQ  # priority queue
 from timeit import default_timer as timer
 import networkx as nx
 
 
-def degreeDiscountIC(G, k, p=.01):
+def degreeDiscountIC(G, k, p=.01, mc=1000):
     """
     在独立级联模型中查找要传播的初始节点集（带优先级队列）
     Input: G -- networkx 图对象
@@ -16,7 +17,7 @@ def degreeDiscountIC(G, k, p=.01):
     Output:
     S -- 选择的k个点的集合
     """
-    S = []
+    S, spread, timelapse, start_time = [], [], [], timer()
     dd = PQ()  # 度折扣
     t = dict()  #
     d = dict()  # 每个顶点的度
@@ -32,15 +33,18 @@ def degreeDiscountIC(G, k, p=.01):
     for i in range(k):
         u, priority = dd.pop_item()  # 基于最大度折扣的节点提取 u及优先级代表节点及其度数
         S.append(u)
+        cur_spread = spread_run_IC(G, S, p, mc)
+        spread.append(cur_spread)
+        timelapse.append(timer() - start_time)
         for v in G[u]:  # G[u]是u的邻接表
             if v not in S:  # ！！！
                 t[v] += G[u][v]['weight']
                 priority = d[v] - 2 * t[v] - (d[v] - t[v]) * t[v] * p
                 dd.add_task(v, -priority)
-    return S
+    return (S, spread, timelapse)
 
 
-def degreeDiscountIC2(G, k, p=.01):
+def degreeDiscountIC2(G, k, p=.01, mc=1000):
     """
     在独立级联模型中查找要传播的初始节点集（无优先级队列）
     Input: G -- networkx 图对象
@@ -53,7 +57,7 @@ def degreeDiscountIC2(G, k, p=.01):
     d = dict()
     dd = dict()  # 度折扣
     t = dict()  # 选择邻居的个数
-    S = []  # 选择的节点集
+    S, spread, timelapse, start_time = [], [], [], timer()
     for u in G:
         d[u] = sum([G[u][v]['weight'] for v in G[u]])  # 每条边增加的度 一般是1，也有两个点之间有多条边
         # d[u] = len(G[u]) # each neighbor adds degree 1
@@ -63,15 +67,18 @@ def degreeDiscountIC2(G, k, p=.01):
         u, ddv = max(dd.items())
         dd.pop(u)
         S.append(u)
+        cur_spread = spread_run_IC(G, S, p, mc)
+        spread.append(cur_spread)
+        timelapse.append(timer() - start_time)
         for v in G[u]:
             if v not in S:
                 t[v] += G[u][v]['weight']
                 dd[v] = d[v] - 2 * t[v] - (d[v] - t[v]) * t[v] * p
-    return S
+    return (S, spread, timelapse)
 
 
-def degreeDiscountStar(G, k, p=.01):
-    S = []
+def degreeDiscountStar(G, k, p=.01, mc=1000):
+    S, spread, timelapse, start_time = [], [], [], timer()
     scores = PQ()
     d = dict()
     t = dict()
@@ -82,14 +89,17 @@ def degreeDiscountStar(G, k, p=.01):
         scores.add_task(u, score)
     for iteration in range(k):
         u, priority = scores.pop_item()
-        print(iteration, -priority)
+        # print(iteration, -priority)
         S.append(u)
+        cur_spread = spread_run_IC(G, S, p, mc)
+        spread.append(cur_spread)
+        timelapse.append(timer() - start_time)
         for v in G[u]:
             if v not in S:
                 t[v] += G[u][v]['weight']
                 score = -((1 - p) ** t[u]) * (1 + (d[u] - t[u]) * p)
                 scores.add_task(v, score)
-    return S
+    return (S, spread, timelapse)
 
 
 if __name__ == "__main__":
@@ -102,43 +112,25 @@ if __name__ == "__main__":
     read_time = time.time()
     print('读取网络时间：', read_time - start)
 
-    # 单次测试
-    # I = 1000
-    # result = []
-    # temp_time = timer()
-    # k = 44
-    # S = degreeDiscountIC(G, k)
-    # cal_time = timer() - temp_time
-    # print('degreeDiscount算法运行时间：', cal_time)
-    # print('k = ', k, '选取节点集为：', S)
-    # from algorithm.Spread.Networkx_spread import spread_run_IC
-    #
-    # average_cover_size = spread_run_IC(G,S,0.01,1000)
-    # print('k=', k, '平均覆盖大小：', average_cover_size)
-
-    I = 1000
+    output = degreeDiscountIC(G, 50, 0.01, 1000)
 
     list_IC_hep = []
-    temp_time = timer()
     for k in range(1, 51):
-        S = degreeDiscountIC(G, k)
-        cal_time = timer() - temp_time
+        S = output[0][:k]
+        cur_spread = output[1][k - 1]
+        cal_time = output[2][k - 1]
         print('degreeDiscount算法运行时间：', cal_time)
         print('k = ', k, '选取节点集为：', S)
-        from algorithm.Spread.Networkx_spread import spread_run_IC
-
-        average_cover_size = spread_run_IC(G, S, 0.01, 1000)
-        print('k=', k, '平均覆盖大小：', average_cover_size)
+        print('k=', k, '平均覆盖大小：', cur_spread)
         list_IC_hep.append({
             'k': k,
             'run time': cal_time,
-            'average cover size': average_cover_size,
+            'average cover size': cur_spread,
             'S': S
         })
         temp_time = timer()  # 记录当前时间
-
     import pandas as pd
 
-    df_IC_random_hep = pd.DataFrame(list_IC_hep)
-    df_IC_random_hep.to_csv('../../data/output/degreeDiscount/IC_degreeDiscount_phy_Graph.csv')
+    df_IC_hep = pd.DataFrame(list_IC_hep)
+    df_IC_hep.to_csv('../../data/degreeDiscount/greedy/IC_degreeDiscount_phy_Graph.csv')
     print('文件输出完毕——结束')

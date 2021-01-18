@@ -101,7 +101,7 @@ def get_most_votes_node(node_influence_set, node_influenced_set):
             votes_num = votes_num + 1 / len(node_influenced_set[influence_node])  # 1/被影响的个数
         node_votes_num.add_task(node, -votes_num)
     max_node, max_votes_num = node_votes_num.pop_item()
-    print(max_votes_num)
+    #print(max_votes_num)
     return max_node
 
 
@@ -141,13 +141,13 @@ if __name__ == "__main__":
     import time
     start = time.time()
     from algorithm.data_handle.read_Graph_networkx import read_Graph
-    G = read_Graph("../data/graphdata/hep.txt", directed=True)
+    G = read_Graph("../data/graphdata/hep.txt")
     read_time = time.time()
     print('读取网络时间：', read_time - start)
 
     E = G.copy()
     temp_time = timer()
-    k = 50
+    k = 45
     S = greedy(G, k)
     cal_time = timer() - temp_time
     print('greedy算法运行时间：', cal_time)

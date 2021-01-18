@@ -93,5 +93,5 @@ if __name__ == "__main__":
     import pandas as pd
 
     df_IC_hep = pd.DataFrame(list_IC_hep)
-    df_IC_hep.to_csv('../../data/output/greedy/IC_CELF_hep_Graph.csv')
+    df_IC_hep.to_csv('../data/output/greedy/IC_CELF_hep_Graph.csv')
     print('文件输出完毕——结束')

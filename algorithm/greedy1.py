@@ -160,13 +160,13 @@ if __name__ == "__main__":
 
     start = time.time()
     from algorithm.data_handle.read_Graph_networkx import read_Graph
-    G = read_Graph("../data/graphdata/hep.txt", directed=True)
+    G = read_Graph("../data/graphdata/hep.txt")
     read_time = time.time()
     print('读取网络时间：', read_time - start)
 
     E = G.copy()
     temp_time = timer()
-    k = 30
+    k = 45
     S = greedy(G, k)
     cal_time = timer() - temp_time
     print('greedy算法运行时间：', cal_time)

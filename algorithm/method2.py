@@ -26,28 +26,20 @@ def read_to_dict():
 
 def LI(G, k):
     k_trusses = k_truss(G)
-    k_cores = node_core_number(G)
     total_weight = get_total_probability(G)
-    bcs = read_to_dict()
     LI = PQ()
     # 首先全部赋值
     for node in G.nodes:
         d = sum([G[node][v]['weight'] for v in G[node]])
         k_tru = k_trusses[node]
-        k_core = k_cores[node]
         omega = total_weight[node]
-        bc = bcs[node]
-        LI.add_task(node, -omega*math.sqrt(k_tru**2+d**3))  # d ** 2 + k_tru ** 2   ///// omega *
+        LI.add_task(node, -omega * math.sqrt(k_tru**2+d**2))  # d ** 2 + k_tru ** 2   ///// omega *
     S = list()
-    from algorithm.greedy1 import get_node_influence_set
-    node_influence_set = get_node_influence_set(G)
     nis = [] #选取的节点及其影响的节点
     while len(S) < k:
         node, node_LI = LI.pop_item()
         if node not in nis:
             S.append(node)
-            nis.append(node)
-            nis.extend(node_influence_set[node])
 
         # print(i)
         # 更新周围节点

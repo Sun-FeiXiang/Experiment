@@ -60,7 +60,7 @@ def get_node_influence_node(G, S, R):
     node_frequency = dict()  # 记录节点出现的频率
     avg_len = 0
     for i in range(R):
-        influence_set = IC(S, G)  # 影响的节点集合
+        influence_set = runIC(G,S,0.01)  # 影响的节点集合
         if len(influence_set) != 0:  # 影响的节点不为空集
             avg_len = avg_len + len(influence_set) / R  # 平均影响大小
             for influence_node in influence_set:
@@ -144,13 +144,13 @@ if __name__ == "__main__":
     start = time.time()
     from algorithm.data_handle.read_Graph_networkx import read_Graph
 
-    G = read_Graph("../data/graphdata/hep.txt", directed=True)
+    G = read_Graph("../data/graphdata/hep.txt")
     read_time = time.time()
     print('读取网络时间：', read_time - start)
 
     E = G.copy()
     temp_time = timer()
-    k = 30
+    k = 45
     S = greedy(G, k)
     cal_time = timer() - temp_time
     print('greedy算法运行时间：', cal_time)

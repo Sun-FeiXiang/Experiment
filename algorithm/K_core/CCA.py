@@ -69,36 +69,35 @@ if __name__ == "__main__":
     import time
 
     start = time.time()
-    G = nx.read_weighted_edgelist("../../data/graphdata/hep.txt", comments='#', nodetype=int, create_using=nx.DiGraph())
+    from algorithm.data_handle.read_Graph_networkx import read_Graph
+    G = read_Graph("../../data/graphdata/hep.txt")
     read_time = time.time()
     print('读取网络时间：', read_time - start)
-
-    # 生成固定的传播概率
-    from generation.generation_propagation_probability import weight_probability_fixed
-
-    weight_probability_fixed(G)
-
-    I = 1000
-    result = []
+    k = 50
     temp_time = timer()
-    for k in range(5, 51, 5):
-        S = CCA(G, k)
-        cal_time = timer() - temp_time
-        print('CCA算法运行时间：', cal_time)
-        print('选取节点集为：', S)
-        from algorithm.Spread.Networkx_spread import spread_run_IC
+    S = CCA(G, k)
+    cal_time = timer() - temp_time
+    print('CCA算法运行时间：', cal_time)
+    print('选取节点集为：', S)
+    from algorithm.Spread.Networkx_spread import spread_run_IC
 
-        average_cover_size = spread_run_IC(S, G, I)
-        print('k =', k, ', f = 0', '平均覆盖大小：', average_cover_size)
-        result.append({
-            'k': k,
-            'run time': cal_time,
-            'average cover size': average_cover_size,
-            'S': S
-        })
-        temp_time = timer()  # 记录当前时间
-    import pandas as pd
+    average_cover_size = spread_run_IC(G,S,0.01,1000)
+    print('k =', k, '平均覆盖大小：', average_cover_size)
 
-    df_result = pd.DataFrame(result)
-    df_result.to_csv('../../data/output/CCA/IC_CCA_hep_Graph.csv')
-    print('文件输出完毕——结束')
+    # I = 1000
+    # result = []
+    # temp_time = timer()
+    # for k in range(5, 51, 5):
+    #
+    #     result.append({
+    #         'k': k,
+    #         'run time': cal_time,
+    #         'average cover size': average_cover_size,
+    #         'S': S
+    #     })
+    #     temp_time = timer()  # 记录当前时间
+    # import pandas as pd
+    #
+    # df_result = pd.DataFrame(result)
+    # df_result.to_csv('../../data/output/CCA/IC_CCA_hep_Graph.csv')
+    # print('文件输出完毕——结束')

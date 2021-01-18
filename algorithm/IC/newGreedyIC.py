@@ -117,24 +117,24 @@ if __name__ == "__main__":
 
     Ep = fixed_probability(G, 0.01)
     list_IC_hep = []
-    out_put = newGreedyIC(G, 50, Ep)
-
-    for k in range(1, 51):
-        S = out_put[0][:k]
-        cur_spread = out_put[1][k - 1]
-        cal_time = out_put[2][k - 1]
-        print('newGreedyIC算法运行时间：', cal_time)
-        print('k = ', k, '选取节点集为：', S)
-        print('k=', k, '平均覆盖大小：', cur_spread)
-        list_IC_hep.append({
-            'k': k,
-            'run time': cal_time,
-            'average cover size': cur_spread,
-            'S': S
-        })
-        temp_time = timer()  # 记录当前时间
-    import pandas as pd
-
-    df_IC_random_hep = pd.DataFrame(list_IC_hep)
-    df_IC_random_hep.to_csv('../../data/output/greedy/IC_newGreedyIC_phy_Graph.csv')
-    print('文件输出完毕——结束')
+    out_put = newGreedyIC(G, 1000, Ep)
+    print(out_put[1][1000 - 1])
+    # for k in range(1, 51):
+    #     S = out_put[0][:k]
+    #     cur_spread = out_put[1][k - 1]
+    #     cal_time = out_put[2][k - 1]
+    #     print('newGreedyIC算法运行时间：', cal_time)
+    #     print('k = ', k, '选取节点集为：', S)
+    #     print('k=', k, '平均覆盖大小：', cur_spread)
+    #     list_IC_hep.append({
+    #         'k': k,
+    #         'run time': cal_time,
+    #         'average cover size': cur_spread,
+    #         'S': S
+    #     })
+    #     temp_time = timer()  # 记录当前时间
+    # import pandas as pd
+    #
+    # df_IC_random_hep = pd.DataFrame(list_IC_hep)
+    # df_IC_random_hep.to_csv('../../data/output/greedy/IC_newGreedyIC_phy_Graph.csv')
+    # print('文件输出完毕——结束')
