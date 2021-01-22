@@ -24,34 +24,46 @@ def read_to_dict():
     return result
 
 
-def LI(G, k):
-    k_trusses = k_truss(G)
-    k_cores = node_core_number(G)
-    total_weight = get_total_probability(G)
-    bcs = read_to_dict()
-    LI = PQ()
+def LI(G, k, k_trusses, total_weight, node_influence_set):
+    LI = dict()
     # 首先全部赋值
     for node in G.nodes:
         d = sum([G[node][v]['weight'] for v in G[node]])
         k_tru = k_trusses[node]
-        k_core = k_cores[node]
+
         omega = total_weight[node]
-        bc = bcs[node]
-        LI.add_task(node, -omega*math.sqrt(k_tru**2+d**3))  # d ** 2 + k_tru ** 2   ///// omega *
+        LI[node] = omega * math.sqrt(k_tru ** 2 + d ** 2)  # d ** 2 + k_tru ** 2   ///// omega *
     S = list()
-    from algorithm.greedy1 import get_node_influence_set
-    node_influence_set = get_node_influence_set(G)
-    nis = [] #选取的节点及其影响的节点
+    #print(sorted(LI.items(), key=lambda x: x[1], reverse=True))
+    nis = []  # 选取的节点及其影响的节点
     while len(S) < k:
-        node, node_LI = LI.pop_item()
+        node, node_LI = sorted(LI.items(), key=lambda x: x[1], reverse=True)[0]
+        print(node, node_LI)
         if node not in nis:
             S.append(node)
-            nis.append(node)
             nis.extend(node_influence_set[node])
-
+            LI = discount(G, LI, node_influence_set[node])
+        del LI[node]
         # print(i)
         # 更新周围节点
     return S
+
+
+def discount(G, LI, influence_nodes):
+    """
+    折扣
+    :param G: 图对象
+    :param LI: 局部影响力，更新
+    :param influence_nodes: 更新这些点的邻居节点的LI值
+    :return:
+    """
+    for node in influence_nodes:
+        nbs = list(G.neighbors(node))
+        for nb in nbs:
+            if nb not in LI.keys():
+                LI[nb] = -100
+            LI[nb] = LI[nb] - LI[node] / len(nbs)
+    return LI
 
 
 def get_total_probability(G):
@@ -73,19 +85,25 @@ if __name__ == "__main__":
 
     start = time.time()
     from algorithm.data_handle.read_Graph_networkx import read_Graph
+
     G = read_Graph("../data/graphdata/hep.txt")
     read_time = time.time()
     print('读取网络时间：', read_time - start)
+    k_trusses = k_truss(G)
+    total_weight = get_total_probability(G)
+    from algorithm.greedy1 import get_node_influence_set
 
+    node_influence_set = get_node_influence_set(G)
     list_IC_random_hep = []
-    temp_time = timer()
+    for k in range(10, 51, 10):
+        temp_time = timer()
+        S = LI(G, k, k_trusses, total_weight, node_influence_set)
+        cal_time = timer() - temp_time
+        print('method1算法运行时间：', cal_time)
+        from algorithm.Spread.Networkx_spread import spread_run_IC
 
-    S = LI(G, 10)
-    from algorithm.Spread.Networkx_spread import spread_run_IC
-
-    average_cover_size = spread_run_IC(G,S, 0.01,1000)
-    print('平均覆盖大小：', average_cover_size)
-
+        average_cover_size = spread_run_IC(G, S, 0.01, 1000)
+        print('k=', k, '平均覆盖大小：', average_cover_size)
 
     # for k in range(1, 51):
     #     S = f(G, k)

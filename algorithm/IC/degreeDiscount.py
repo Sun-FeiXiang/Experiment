@@ -108,7 +108,7 @@ if __name__ == "__main__":
     start = time.time()
     from algorithm.data_handle.read_Graph_networkx import read_Graph
 
-    G = read_Graph('../../data/graphdata/phy.txt')
+    G = read_Graph('../../data/graphdata/hep.txt',directed=True)
     read_time = time.time()
     print('读取网络时间：', read_time - start)
 
@@ -132,5 +132,5 @@ if __name__ == "__main__":
     import pandas as pd
 
     df_IC_hep = pd.DataFrame(list_IC_hep)
-    df_IC_hep.to_csv('../../data/degreeDiscount/greedy/IC_degreeDiscount_phy_Graph.csv')
+    df_IC_hep.to_csv('../../data/output/degreeDiscount/IC_degreeDiscount_hep_DiGraph.csv')
     print('文件输出完毕——结束')

@@ -164,19 +164,20 @@ if __name__ == "__main__":
     read_time = time.time()
     print('读取网络时间：', read_time - start)
 
-    E = G.copy()
-    temp_time = timer()
-    k = 45
-    S = greedy(G, k)
-    cal_time = timer() - temp_time
-    print('greedy算法运行时间：', cal_time)
-    print('k = ', k, '选取节点集为：', S)
-    # S = [62227, 11078, 14642, 36010, 63113, 16164, 33715, 36860, 9082, 16164]
-    # S = [6142, 42819, 66135, 66689, 18844, 16164, 30744, 5138, 38112, 40803, 49418, 36860, 63707, 20394, 29595, 57433, 1441, 14906, 23420, 49295, 43226, 41221, 16164, 30160, 23420, 3423, 19660, 48570, 45319, 1441, 57878, 11599, 11850, 1441, 11850, 48570, 12334, 17370, 6975, 51706, 28083, 29595, 11180, 26913, 14642, 2410, 43686, 38614, 11913, 3624]
-    from algorithm.Spread.Networkx_spread import spread_run_IC
+    for k in range(10, 51, 10):
+        E = G.copy()
+        temp_time = timer()
+        # k = 30
+        S = greedy(G, k)
+        cal_time = timer() - temp_time
+        print('greedy算法运行时间：', cal_time)
+        print('k = ', k, '选取节点集为：', S)
+        # S = [62227, 11078, 14642, 36010, 63113, 16164, 33715, 36860, 9082, 16164]
+        # S = [6142, 42819, 66135, 66689, 18844, 16164, 30744, 5138, 38112, 40803, 49418, 36860, 63707, 20394, 29595, 57433, 1441, 14906, 23420, 49295, 43226, 41221, 16164, 30160, 23420, 3423, 19660, 48570, 45319, 1441, 57878, 11599, 11850, 1441, 11850, 48570, 12334, 17370, 6975, 51706, 28083, 29595, 11180, 26913, 14642, 2410, 43686, 38614, 11913, 3624]
+        from algorithm.Spread.Networkx_spread import spread_run_IC
 
-    average_cover_size = spread_run_IC(E,S, 0.01,1000)
-    print('k=', k, '平均覆盖大小：', average_cover_size)
+        average_cover_size = spread_run_IC(E,S, 0.01,1000)
+        print('k=', k, '平均覆盖大小：', average_cover_size)
 
     # list_IC_random_hep = []
     # temp_time = timer()

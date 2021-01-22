@@ -18,7 +18,10 @@ def k_truss(G):
         start_adj = list(G.adj[start].keys())
         end_adj = list(G.adj[end].keys())
         intersection = [i for i in start_adj if i in end_adj]  # O(k^2)
-        edge_truss[edge] = len(intersection) + 2  # 边的truss值是交集+2
+        inter_node_num = 0
+        for inter in intersection:
+            inter_node_num = inter_node_num + min(G[start][inter]['weight'],G[end][inter]['weight'])
+        edge_truss[edge] = inter_node_num + 2  # 边的truss值是交集+2
     # print(edge_truss[(0, 1)])
     node_truss = dict()
     for node in G.nodes:  # O(nk)

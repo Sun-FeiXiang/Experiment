@@ -13,13 +13,13 @@ def read_Graph(file_name,directed=False):
     else:
         G = nx.Graph()
     with open(file_name) as f:
-        next(f)
         for line in f:
-            u, v = map(int, line.split())
-            try:
-                G[u][v]['weight'] += 1
-            except:
-                G.add_edge(u, v, weight=1)
+            if line[0] != '#':
+                u, v = map(int, line.split())
+                try:
+                    G[u][v]['weight'] += 1
+                except:
+                    G.add_edge(u, v, weight=1)
     return G
 
 
