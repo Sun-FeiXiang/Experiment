@@ -1,6 +1,6 @@
 from igraph import *
 from timeit import default_timer as timer
-from algorithm.Spread.Networkx_spread import spread_run_IC
+from diffusion import spread_run_IC
 import networkx as nx
 
 
@@ -69,7 +69,7 @@ def test_igraph():
 if __name__ == "__main__":
     import time
     start = time.time()
-    from algorithm.data_handle.read_Graph_networkx import read_Graph
+    from dataPreprocessing.read_txt_nx import read_Graph
     G = read_Graph("../data/graphdata/hep.txt")
     read_time = time.time()
     print('读取网络时间：', read_time - start)

@@ -1,7 +1,9 @@
+# 读取txt文件为networkx网络图
+
 import networkx as nx
 
 
-def read_Graph(file_name,directed=False):
+def read_Graph(file_name, directed=False):
     """
     默认读取无向图
     :param file_name:
@@ -23,6 +25,7 @@ def read_Graph(file_name,directed=False):
     return G
 
 
+# 计算平均度
 def avg_degree(G):
     s = 0
     node_num = 0
@@ -32,9 +35,9 @@ def avg_degree(G):
         # print(cur_degree)
         node_num = node_num + 1
         all_degree = all_degree + d
-    return all_degree/node_num
+    return all_degree / node_num
 
 
 if __name__ == "__main__":
-    G = read_Graph('../../data/graphdata/hep.txt')
+    G = read_Graph('../data/graphdata/hep.txt')
     a = avg_degree(G)

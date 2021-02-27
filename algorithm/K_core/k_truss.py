@@ -1,7 +1,6 @@
 import random
 
 import networkx as nx
-import sys
 
 
 def k_truss(G):
@@ -100,7 +99,7 @@ if __name__ == "__main__":
     read_time = time.time()
     print('读取网络时间：', read_time - start)
     # 生成固定的传播概率为0.01
-    from generation.generation_propagation_probability import weight_probability_fixed
+    from dataPreprocessing.generation_propagation_probability import weight_probability_fixed
 
     weight_probability_fixed(G, 0.01)
 

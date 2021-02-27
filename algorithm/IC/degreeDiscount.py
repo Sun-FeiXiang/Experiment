@@ -2,10 +2,9 @@
 独立级联模型下，度折扣算法 degree discount heuristic [1]
 [1] -- Wei Chen et al. Efficient influence maximization in Social Networks (algorithm 4)
 """
-from Spread.Networkx_spread import spread_run_IC
+from diffusion import spread_run_IC
 from algorithm.priorityQueue import PriorityQueue as PQ  # priority queue
 from timeit import default_timer as timer
-import networkx as nx
 
 
 def degreeDiscountIC(G, k, p=.01, mc=1000):
@@ -106,7 +105,7 @@ if __name__ == "__main__":
     import time
 
     start = time.time()
-    from algorithm.data_handle.read_Graph_networkx import read_Graph
+    from dataPreprocessing.read_txt_nx import read_Graph
 
     G = read_Graph('../../data/graphdata/hep.txt',directed=True)
     read_time = time.time()

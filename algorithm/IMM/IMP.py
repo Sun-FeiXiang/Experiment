@@ -5,7 +5,7 @@ import multiprocessing as mp
 import time
 import math
 from timeit import default_timer as timer
-from algorithm.Spread.Network_spread import spread_run
+from diffusion import spread_run
 """
 
 来源：Influence Maximization in Near-Linear Time: A Martingale Approach

@@ -1,6 +1,5 @@
 from algorithm.K_core.k_core_subgraph import find_kcores
 from timeit import default_timer as timer
-import networkx as nx
 
 
 def mark_overlay(G, node, CO_v, d=3):
@@ -69,7 +68,7 @@ if __name__ == "__main__":
     import time
 
     start = time.time()
-    from algorithm.data_handle.read_Graph_networkx import read_Graph
+    from dataPreprocessing.read_txt_nx import read_Graph
     G = read_Graph("../../data/graphdata/hep.txt")
     read_time = time.time()
     print('读取网络时间：', read_time - start)
@@ -79,7 +78,7 @@ if __name__ == "__main__":
     cal_time = timer() - temp_time
     print('CCA算法运行时间：', cal_time)
     print('选取节点集为：', S)
-    from algorithm.Spread.Networkx_spread import spread_run_IC
+    from diffusion import spread_run_IC
 
     average_cover_size = spread_run_IC(G,S,0.01,1000)
     print('k =', k, '平均覆盖大小：', average_cover_size)

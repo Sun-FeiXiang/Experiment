@@ -5,9 +5,7 @@ local influence = alpha * math.sqrt(k_truss^2+d^2)
 """
 
 from algorithm.K_core.k_truss import k_truss
-from algorithm.K_core.k_shell import node_core_number
 from timeit import default_timer as timer
-import networkx as nx
 import math
 from algorithm.priorityQueue import PriorityQueue as PQ
 
@@ -64,7 +62,7 @@ if __name__ == "__main__":
     import time
 
     start = time.time()
-    from algorithm.data_handle.read_Graph_networkx import read_Graph
+    from dataPreprocessing.read_txt_nx import read_Graph
     G = read_Graph("../data/graphdata/hep.txt")
     read_time = time.time()
     print('读取网络时间：', read_time - start)
@@ -73,7 +71,7 @@ if __name__ == "__main__":
     temp_time = timer()
 
     S = LI(G, 10)
-    from algorithm.Spread.Networkx_spread import spread_run_IC
+    from diffusion import spread_run_IC
 
     average_cover_size = spread_run_IC(G,S, 0.01,1000)
     print('平均覆盖大小：', average_cover_size)

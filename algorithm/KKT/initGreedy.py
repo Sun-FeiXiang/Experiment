@@ -1,10 +1,7 @@
-import matplotlib.pyplot as plt
-from random import uniform, seed
-import numpy as np
 import time
 from igraph import *
 
-from algorithm.Spread.igraph_spread import IC
+from diffusion.igraph_diffusion import IC
 
 
 def greedy(g, k, p=0.01, mc=1000):

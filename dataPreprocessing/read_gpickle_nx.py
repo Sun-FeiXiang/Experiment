@@ -1,3 +1,4 @@
+# 读取gpickle文件为networkx网络图
 import networkx as nx
 
 
@@ -13,6 +14,7 @@ def read_gpickle_DiGraph(file):
             G.add_edge(key, end, weight=values[end]['weight'])
     return G
 
+
 def read_gpickle_Graph(file):
     """
     :param file: gpickle文件路径
@@ -25,5 +27,6 @@ def read_gpickle_Graph(file):
             G.add_edge(key, end, weight=values[end]['weight'])
     return G
 
+
 if __name__ == "__main__":
-    G = read_gpickle_DiGraph("../../data/graphs/hep.gpickle")
+    G = read_gpickle_DiGraph("../data/graphs/hep.gpickle")

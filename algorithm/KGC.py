@@ -131,7 +131,7 @@ if __name__ == "__main__":
     print('读取网络时间：', read_time - start)
 
     # 生成固定的传播概率
-    from generation.generation_propagation_probability import weight_probability_fixed
+    from dataPreprocessing.generation_propagation_probability import weight_probability_fixed
 
     weight_probability_fixed(G, 0.01)
 
@@ -143,7 +143,7 @@ if __name__ == "__main__":
     cal_time = timer() - temp_time
     print('greedy算法运行时间：', cal_time)
     print('k = ', k, '选取节点集为：', S)
-    from algorithm.Spread.Networkx_spread import spread_run_IC
+    from diffusion import spread_run_IC
 
     average_cover_size = spread_run_IC(S, G, 1000)
     print('k=', k, '平均覆盖大小：', average_cover_size)

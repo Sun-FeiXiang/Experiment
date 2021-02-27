@@ -2,10 +2,10 @@ import networkx as nx
 
 
 def out_put_betweenness_centrality():
-    G = nx.read_weighted_edgelist("../../data/graphdata/phy.txt", comments='#', nodetype=int, create_using=nx.DiGraph())
+    G = nx.read_weighted_edgelist("../data/graphdata/phy.txt", comments='#', nodetype=int, create_using=nx.DiGraph())
     bcs = nx.betweenness_centrality(G)
     # print(bcs)
-    with open("phy_betweenness_centrality.txt", "w") as f:
+    with open("../algorithm/generation/phy_betweenness_centrality.txt", "w") as f:
         for key in bcs.keys():
             f.write(str(key))
             f.write(" ")

@@ -1,7 +1,8 @@
+# 优先选择度大的节点 使用igraph实现
 from igraph import *
 from algorithm.priorityQueue import PriorityQueue as PQ
 import time
-from algorithm.Spread.igraph_spread import IC
+from diffusion import IC
 
 
 def degree(g, k, p=0.01, mc=1000):

@@ -8,9 +8,8 @@
 from __future__ import division
 from copy import deepcopy
 import random
-import networkx as nx
 from timeit import default_timer as timer
-from algorithm.Spread.Networkx_spread import spread_run_IC
+from diffusion import spread_run_IC
 
 
 def bfs(E, S):
@@ -107,13 +106,13 @@ if __name__ == "__main__":
     import time
 
     start = time.time()
-    from algorithm.data_handle.read_Graph_networkx import read_Graph
+    from dataPreprocessing.read_txt_nx import read_Graph
 
     G = read_Graph('../../data/graphdata/phy.txt')
     read_time = time.time()
     print('读取网络时间：', read_time - start)
     # 生成固定的传播概率
-    from algorithm.generation.generation_propagation_probability import fixed_probability
+    from dataPreprocessing.generation_propagation_probability import fixed_probability
 
     Ep = fixed_probability(G, 0.01)
     list_IC_hep = []

@@ -5,7 +5,7 @@
 from algorithm.priorityQueue import PriorityQueue as PQ
 from algorithm.IC.IC import runIC
 import networkx as nx
-from timeit import default_timer as timer
+
 
 def generalGreedy(G, k, p=.01):
     """ 使用一般的贪心启发式寻找初始节点集S
@@ -43,7 +43,7 @@ if __name__ == "__main__":
     print('读取网络时间：', read_time - start)
 
     # 生成固定的传播概率为0.01
-    from generation.generation_propagation_probability import weight_probability_fixed
+    from dataPreprocessing.generation_propagation_probability import weight_probability_fixed
 
     weight_probability_fixed(G, 0.01)
 
@@ -51,7 +51,7 @@ if __name__ == "__main__":
 
     k = 30
     S = generalGreedy(G, k)
-    from algorithm.Spread.Networkx_spread import spread_run_IC
+    from diffusion import spread_run_IC
     average_cover_size = spread_run_IC(S, G, 1000)
     print('k=', k, '平均覆盖大小：', average_cover_size)
 

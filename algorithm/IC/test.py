@@ -7,13 +7,13 @@ if __name__ == '__main__':
     import time
 
     start = time.time()
-    from data_handle.graph_data_handle import read_gpickle_DiGraph
+    from dataPreprocessing.read_gpickle_nx import read_gpickle_DiGraph
 
     G = read_gpickle_DiGraph("../../data/graphs/hep.gpickle")
     read_time = time.time()
     print('读取网络时间：', read_time - start)
     # 生成固定的传播概率
-    from generation.generation_propagation_probability import fixed_probability
+    from dataPreprocessing.generation_propagation_probability import fixed_probability
     Ep = fixed_probability(G, 0.01)
     I = 1000
 

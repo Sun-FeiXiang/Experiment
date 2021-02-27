@@ -225,11 +225,11 @@ if __name__ == "__main__":
     node_num = len(G.nodes)
     edge_num = len(G.edges)
     # 生成固定的传播概率
-    from generation.generation_propagation_probability import weight_probability_inEdge
+    from dataPreprocessing.generation_propagation_probability import weight_probability_inEdge
     weight_probability_inEdge(G)
 
     # 生成固定的传播概率
-    from generation.generation_propagation_probability import fixed_probability
+    from dataPreprocessing.generation_propagation_probability import fixed_probability
     Ep = fixed_probability(G, 0.01)
 
     theta = 1.0 / 20

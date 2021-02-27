@@ -39,7 +39,7 @@ if __name__ == "__main__":
     import time
 
     start = time.time()
-    from algorithm.data_handle.read_Graph_networkx import read_Graph
+    from dataPreprocessing.read_txt_nx import read_Graph
 
     G = read_Graph("../../data/NetHEPT.txt")
     read_time = time.time()

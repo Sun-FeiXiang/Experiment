@@ -4,7 +4,6 @@
 
 [1] -- Wei Chen et al. Efficient influence maximization in Social Networks
 """
-import networkx as nx
 from timeit import default_timer as timer
 
 
@@ -26,7 +25,7 @@ if __name__ == "__main__":
     import time
 
     start = time.time()
-    from algorithm.data_handle.read_Graph_networkx import read_Graph
+    from dataPreprocessing.read_txt_nx import read_Graph
     G = read_Graph('../../data/graphdata/phy.txt')
     read_time = time.time()
     print('读取网络时间：', read_time - start)
@@ -45,7 +44,7 @@ if __name__ == "__main__":
         print('randomHeuristic算法运行时间：', run_time)
         print('k = ', i, '选取节点集为：', s)
 
-        from algorithm.Spread.Networkx_spread import spread_run_IC
+        from diffusion import spread_run_IC
 
         average_cover_size = spread_run_IC(G,s,0.01, 1000)
         print('k=', i, '平均覆盖大小：', average_cover_size)

@@ -4,10 +4,8 @@
 """
 import networkx as nx
 
-from algorithm.IC.IC import avgIC_cover_size
-from algorithm.IC.degreeDiscount import degreeDiscountIC
 from itertools import combinations
-from algorithm.Spread.Networkx_spread import spread_run_IC
+from diffusion import spread_run_IC
 
 if __name__ == '__main__':
     import time
@@ -29,7 +27,7 @@ if __name__ == '__main__':
     print(time.time() - start)
 
     # 生成固定的传播概率
-    from generation.generation_propagation_probability import weight_probability_inEdge
+    from dataPreprocessing.generation_propagation_probability import weight_probability_inEdge
     weight_probability_inEdge(G)
 
     seed_size = 5

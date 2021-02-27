@@ -1,5 +1,6 @@
+# 生成传播概率
 
-
+# 返回固定传播概率
 def fixed_probability(G, p):
     """
     :param G: 图
@@ -11,6 +12,7 @@ def fixed_probability(G, p):
         fp[edge] = p
     return fp
 
+# 用权重表示传播概率，固定值
 def weight_probability_fixed(G,p=0.01):
     """
     用weight表示传播概率，使用统一的传播概率，默认为0.01
@@ -21,7 +23,7 @@ def weight_probability_fixed(G,p=0.01):
     for edge in G.edges:
         G.edges[edge]['weight'] = p
     
-    
+# 用权重表示传播概率，1/in_edge
 def weight_probability_inEdge(G):
     """
     用weight表示传播概率，生成e的概率为以e为终点，该点的入边
