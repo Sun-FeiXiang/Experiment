@@ -76,7 +76,7 @@ def get_node_degree(G):
 def edge_cover(G,edge_truss_number,c):
 
     # 层次遍历
-    b 
+    b
 
 def CBECA(G, k, p, mc=1000,c=0.2):
     edge_truss_num = edge_truss_number(G)
