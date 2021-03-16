@@ -4,8 +4,9 @@
 """
 from algorithm.priorityQueue import PriorityQueue as PQ  # priority queue
 import math
-from algorithm.IC.IC import runIC
-
+from diffusion.Networkx_diffusion import spread_run_IC
+from diffusion.Networkx_diffusion import runIC
+from algorithm.KKT.init_greedy import greedy
 
 def buv(G, u, v):
     """
@@ -70,19 +71,8 @@ def HPG(G, k, c=0.5):
                 pi[u] = PI(G, u, T)
                 dd.add_task(u, pi[u])
 
-    R = 20
-    for i in range(k2):
-        s = PQ()  # 优先队列
-        for v in G.nodes():
-            if v not in T:
-                s.add_task(v, 0)  # 初始传播值
-                for j in range(R):  # 运行R次随机级联
-                    [priority, count, task] = s.entry_finder[v]
-                    s.add_task(v, priority - float(len(runIC(G, T + [v]))) / R)  # 加入标准传播值
-        task, priority = s.pop_item()
-        S.append(task)
-        T.append(task)
-        T = runIC(G, T)
+    KKT = greedy(G,k2,0.01,100)
+    S.extend(KKT[0])
     return S
 
 
@@ -90,9 +80,8 @@ if __name__ == "__main__":
     import time
 
     start = time.time()
-    from dataPreprocessing.read_gpickle_nx import read_gpickle_DiGraph
-
-    G = read_gpickle_DiGraph("../data/graphs/hep.gpickle")
+    from dataPreprocessing.read_txt_nx import read_Graph
+    G = read_Graph('../../data/graphdata/hep.txt')
     read_time = time.time()
     print('读取网络时间：', read_time - start)
 
@@ -105,7 +94,4 @@ if __name__ == "__main__":
     cal_time = time.time()
     print('算法运行时间：', cal_time - read_time)
     print('选取节点集为：', S)
-
-    from algorithm.IC.IC import avgIC_cover_size
-
-    print('平均覆盖大小：', avgIC_cover_size(G, S, 0.01, I))
+    print('平均覆盖大小：', spread_run_IC(G, S, 0.01, I))

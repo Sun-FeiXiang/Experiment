@@ -1,6 +1,6 @@
 from igraph import *
 from timeit import default_timer as timer
-from diffusion import spread_run_IC
+from diffusion.Networkx_diffusion import spread_run_IC
 import networkx as nx
 
 
@@ -70,7 +70,7 @@ if __name__ == "__main__":
     import time
     start = time.time()
     from dataPreprocessing.read_txt_nx import read_Graph
-    G = read_Graph("../data/graphdata/hep.txt")
+    G = read_Graph("../../data/graphdata/hep.txt")
     read_time = time.time()
     print('读取网络时间：', read_time - start)
     celf_output = CELF(G, 50, p=0.01, mc=1000)

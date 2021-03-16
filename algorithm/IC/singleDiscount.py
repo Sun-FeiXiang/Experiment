@@ -3,11 +3,11 @@
 
 参考：[1] -- Wei Chen et al. Efficient influence maximization in Social Networks
 """
-from priorityQueue import PriorityQueue as PQ  # priority queue
+from algorithm.priorityQueue import PriorityQueue as PQ  # priority queue
 from timeit import default_timer as timer
+from diffusion.Networkx_diffusion import spread_run_IC
 
-
-def singleDiscount(G, k):
+def singleDiscount(G, k,p,mc):
     """
     在独立级联模型中查找要传播的初始节点集（带优先级队列）
     Input: G -- networkx图对象
@@ -15,14 +15,18 @@ def singleDiscount(G, k):
     Output:
     S -- 选择的k个点的集合
     """
-    S = []  # set of activated nodes
+    S, timelapse, spread = [], [], []  # set of activated nodes
     d = PQ()  # degrees
+    start_time = timer()
     for u in G:
         degree = sum([G[u][v]['weight'] for v in G[u]])
         d.add_task(u, -degree)
     for i in range(k):
         u, priority = d.pop_item()
         S.append(u)
+        cur_spread = spread_run_IC(G, S, p, mc)
+        spread.append(cur_spread)
+        timelapse.append(timer() - start_time)
         for v in G[u]:
             if v not in S:
                 [priority, count, task] = d.entry_finder[v]
@@ -35,7 +39,7 @@ if __name__ == "__main__":
 
     start = time.time()
     from dataPreprocessing.read_txt_nx import read_Graph
-    G = read_Graph('../../data/graphdata/phy.txt')
+    G = read_Graph('../../data/graphdata/hep.txt')
     read_time = time.time()
     print('读取网络时间：', read_time - start)
 
