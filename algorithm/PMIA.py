@@ -2,10 +2,12 @@
 PMIA算法实现
 来源：Scalable Influence Maximization for Prevalent Viral Marketing in Large-Scale Social Networks.
 """
-from timeit import default_timer as timer
+from diffusion.Networkx_diffusion import spread_run_IC,spread_run_LT
 import networkx as nx
 import math
-
+import time
+from dataPreprocessing.read_txt_nx import read_Graph
+from dataPreprocessing.generation_propagation_probability import fixed_probability
 
 def updateAP(ap, S, PMIIAv, PMIIA_MIPv, Ep):
     ''' Assumption: PMIIAv is a directed tree, which is a subgraph of general G.
@@ -125,6 +127,20 @@ def updateIS(IS, S, u, PMIOA, PMIIA):
 
 
 def computePMIIA(G, ISv, v, theta, S, Ep):
+    """
+    节点v排除前缀的最大影响路径。。。
+    我们从v遍历向内的边开始一个Dijkstra算法。
+    每当Dijkstra算法遇到一个种子节点S时，
+    它就停止这个分支，不再继续到S的内邻居。
+    Dijkstra算法完成后，我们从计算的内树中移除所有节点IS(v，S)。
+    :param G:
+    :param ISv:无效种子集，在之前选择种子的去除前缀的最大影响路径上
+    :param v:
+    :param theta:
+    :param S:
+    :param Ep:
+    :return:
+    """
     # 初始化PMIIA
     PMIIA = nx.DiGraph()  # 排除前缀的最大影响图
     PMIIA.add_node(v)
@@ -168,9 +184,9 @@ def computePMIIA(G, ISv, v, theta, S, Ep):
 
 
 def PMIA(G, k, theta, Ep):
-    start = time.time()
+    start_time = time.time()
     # 初始化
-    S = []
+    S, timelapse = [], []
     IncInf = dict(zip(G.nodes(), [0] * len(G)))  # 增量影响传播
     PMIIA = dict()  # node to tree
     PMIOA = dict()
@@ -181,10 +197,10 @@ def PMIA(G, k, theta, Ep):
     IS = dict()
     for v in G:
         IS[v] = []
-        PMIIA[v], PMIIA_MIP[v] = computePMIIA(G, IS[v], v, theta, S, Ep)
+        PMIIA, PMIIA_MIP = computePMIIA(G, IS[v], v, theta, S, Ep)#最大影响图核最大影响树
         for u in PMIIA[v]:
-            ap[(u, PMIIA[v])] = 0  # PMIIA[v]中u节点的ap，初始化
-        updateAlpha(alpha, v, S, PMIIA[v], PMIIA_MIP[v], Ep, ap)  # 更新ap
+            ap[(u, PMIIA[v])] = 0  # u在PMIIA[v]中被激活的概率，初始化
+        updateAlpha(alpha, v, S, PMIIA[v], PMIIA_MIP, Ep, ap)  # 更新ap
         for u in PMIIA[v]:
             IncInf[u] += alpha[(PMIIA[v], u)] * (1 - ap[(u, PMIIA[v])])
     # print('初始化完成')
@@ -205,62 +221,44 @@ def PMIA(G, k, theta, Ep):
         for v in PMIOA[u]:
             if v != u:
                 PMIIA[v], PMIIA_MIP[v] = computePMIIA(G, IS[v], v, theta, S, Ep)
-                updateAP(ap, S, PMIIA[v], PMIIA_MIP[v], Ep)
-                updateAlpha(alpha, v, S, PMIIA[v], PMIIA_MIP[v], Ep, ap)
+                updateAP(ap, S, PMIIA, PMIIA_MIP, Ep)
+                updateAlpha(alpha, v, S, PMIIA[v], PMIIA_MIP, Ep, ap)
                 # 添加增量影响
                 for w in PMIIA[v]:
                     if w not in S:
                         IncInf[w] += alpha[(PMIIA[v], w)] * (1 - ap[(w, PMIIA[v])])
+        timelapse.append(time.time()-start_time)
 
     return S
 
 
 if __name__ == "__main__":
-    import time
-
     start = time.time()
-    G = nx.read_weighted_edgelist("../data/soc-Epinions1.txt", comments='#', nodetype=int, create_using=nx.DiGraph())
+    G = read_Graph("../data/graphdata/hep.txt")
+    G = G.to_directed()#转换为有向图
     read_time = time.time()
     print('读取网络时间：', read_time - start)
-    node_num = len(G.nodes)
-    edge_num = len(G.edges)
-    # 生成固定的传播概率
-    from dataPreprocessing.generation_propagation_probability import weight_probability_inEdge
-    weight_probability_inEdge(G)
+    p = 0.01
+    theta = 1/320
+    Ep = fixed_probability(G,p)
+    algorithm_output = PMIA(G, 50,theta,Ep)
 
-    # 生成固定的传播概率
-    from dataPreprocessing.generation_propagation_probability import fixed_probability
-    Ep = fixed_probability(G, 0.01)
-
-    theta = 1.0 / 20
-    pool = None
-    I = 1000
-    l2c = [[0, 0]]
-
-    list_IC_random_hep = []
-    temp_time = timer()
-
-    for k in range(5, 51, 5):
-        S = PMIA(G, k, theta, Ep)
-        cal_time = timer() - temp_time
-        print('PMIA算法运行时间：', cal_time)
+    list_IC_hep = []
+    for k in range(1, 51):
+        S = algorithm_output[0][:k]
+        cur_spread = spread_run_IC(G, S, p, 1000)
+        cal_time = algorithm_output[1][k - 1]
+        print('CCA算法运行时间：', cal_time)
         print('k = ', k, '选取节点集为：', S)
-
-        from algorithm.IC.IC import avgIC_cover_size
-
-        average_cover_size = avgIC_cover_size(G, S, 0.01, I)
-        print('平均覆盖大小：', average_cover_size)
-
-        list_IC_random_hep.append({
+        print('k=', k, '平均覆盖大小：', cur_spread)
+        list_IC_hep.append({
             'k': k,
             'run time': cal_time,
-            'average cover size': average_cover_size,
+            'average cover size': cur_spread,
             'S': S
         })
-        temp_time = timer()  # 记录当前时间
-
     import pandas as pd
 
-    df_IC_random_hep = pd.DataFrame(list_IC_random_hep)
-    df_IC_random_hep.to_csv('../data/output/PMIA/IC_PMIA_Epinions.csv')
+    df_IC_hep = pd.DataFrame(list_IC_hep)
+    df_IC_hep.to_csv('../../data/output/PMIA/IC_PMIA(p=0.01)_hep_Graph.csv')
     print('文件输出完毕——结束')

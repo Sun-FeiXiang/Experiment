@@ -17,7 +17,7 @@ if __name__ == '__main__':
     Ep = fixed_probability(G, 0.01)
     I = 1000
 
-    from algorithm.IC.newGreedyIC import newGreedyIC
+    from algorithm.greedy.newGreedyIC import newGreedyIC
 
     list_IC_hep = []
     temp_time = timer()

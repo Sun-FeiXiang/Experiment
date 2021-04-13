@@ -70,17 +70,18 @@ if __name__ == "__main__":
     import time
     start = time.time()
     from dataPreprocessing.read_txt_nx import read_Graph
-    G = read_Graph("../../data/graphdata/hep.txt")
+    G = read_Graph("../../data/graphdata/phy.txt")
     read_time = time.time()
     print('读取网络时间：', read_time - start)
-    celf_output = CELF(G, 50, p=0.01, mc=1000)
+    p = 0.05
+    celf_output = CELF(G, 50, p, mc=10000)
     # print("greedy output: " + str(greedy_output[0]))
     list_IC_hep = []
     for k in range(1, 51):
         S = celf_output[0][:k]
         cur_spread = celf_output[1][k - 1]
         cal_time = celf_output[2][k - 1]
-        print('newGreedyIC算法运行时间：', cal_time)
+        print('CELF算法运行时间：', cal_time)
         print('k = ', k, '选取节点集为：', S)
         print('k=', k, '平均覆盖大小：', cur_spread)
         list_IC_hep.append({
@@ -93,5 +94,5 @@ if __name__ == "__main__":
     import pandas as pd
 
     df_IC_hep = pd.DataFrame(list_IC_hep)
-    df_IC_hep.to_csv('../data/output/greedy/IC_CELF_hep_Graph.csv')
+    df_IC_hep.to_csv('../../data/output/greedy/IC_CELF(p=0.05)_phy_Graph.csv')
     print('文件输出完毕——结束')

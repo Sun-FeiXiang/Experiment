@@ -35,7 +35,7 @@ if __name__ == '__main__':
 
     I = 1000
 
-    from algorithm.IC.newGreedyIC import newGreedyIC
+    from algorithm.greedy.newGreedyIC import newGreedyIC
 
     list_IC_random_hep = []
     temp_time = timer()

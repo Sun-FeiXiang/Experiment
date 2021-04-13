@@ -1,13 +1,13 @@
-# from algorithm.data_handle.read_Graph_networkx import read_Graph
-# G = read_Graph("../data/graphdata/hep.txt",directed=True)
-# S = [131, 200, 639, 326, 287, 608, 267, 100, 744, 474]
-# from algorithm.Spread.Networkx_spread import spread_run_IC
-#
-# average_cover_size = spread_run_IC(G, S, 0.01, 1000)
-# print('平均覆盖大小：', average_cover_size)
+CCA1=[13541, 25580, 13439, 22764, 22762, 22756, 15303, 5551, 11821, 28576, 7181, 17527, 10040, 17525, 11453, 11451, 5105, 4115, 14448, 29844, 28857, 33592, 14692, 4887, 1145, 16822, 7720, 4832, 10758, 15679, 29424, 10668, 15313, 24198, 12628, 29704, 21146, 26205, 12155, 31443, 33470, 9366, 109, 12832, 20784, 934, 12626, 30078, 13257, 5980]
+CCA2=[13541, 25580, 13439, 22764, 22756, 15303, 5551, 11821, 7181, 17527, 10040, 17525, 11453, 5105,29844, 33592, 14692, 4887, 1145, 16822, 7720, 29448,
+      10758, 15679, 29424, 10668, 15313, 24198, 29704, 3769, 26205, 12155, 31443, 33470, 10805,
+      18612, 33555, 9366, 109, 12832, 12626, 13257, 5980, 9362, 7391, 15765, 16353, 3311, 5443, 776]
 
-import networkx as nx
-# from algorithm.data_handle.read_Graph_networkx import read_Graph
-# G = read_Graph('../data/text.txt',directed=False)
-# nei = list(G.neighbors(1))
-# G2 = read_Graph('../data/text.txt',directed=True)
+from diffusion.Networkx_diffusion import spread_run_IC
+from dataPreprocessing.read_txt_nx import read_Graph
+G = read_Graph("../data/graphdata/phy.txt")
+for k in range(1, 51):
+    S1 = CCA1[:k]
+    S2 = CCA2[:k]
+    print(k,"->CCA1 ",spread_run_IC(G, S1, 0.01, 100),";CCA2 ",spread_run_IC(G, S2, 0.01, 100))
+

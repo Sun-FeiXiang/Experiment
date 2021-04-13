@@ -1,7 +1,3 @@
-# Directed graph (each unordered pair of nodes is saved once): CA-HepPh.txt 
-# Collaboration network of Arxiv High Energy Physics category (there is an edge if authors coauthored at least one paper)
-# Nodes: 12008 Edges: 237010
-# FromNodeId	ToNodeId
 17010	1943
 17010	2489
 17010	3426

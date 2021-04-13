@@ -39,5 +39,5 @@ def avg_degree(G):
 
 
 if __name__ == "__main__":
-    G = read_Graph('../data/graphdata/hep.txt')
+    G = read_Graph('../data/facebook_combined.txt')
     a = avg_degree(G)

@@ -17,6 +17,20 @@
             </Attribute>
           </value>
         </entry>
+        <entry key="\algorithm\CELF\CELF.py">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\algorithm\Chinese\CCA.py">
+          <value>
+            <Attribute>
+              <option name="separator" value=":" />
+            </Attribute>
+          </value>
+        </entry>
         <entry key="\algorithm\Chinese\HPG.py">
           <value>
             <Attribute>
@@ -31,6 +45,13 @@
             </Attribute>
           </value>
         </entry>
+        <entry key="\algorithm\IC\degreeDiscount.py">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
         <entry key="\algorithm\IC\singleDiscount.py">
           <value>
             <Attribute>
@@ -38,7 +59,56 @@
             </Attribute>
           </value>
         </entry>
+        <entry key="\algorithm\IMM.py">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\algorithm\KKT\initGreedy.py">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\algorithm\PMIA.py">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\algorithm\__init__.py">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\algorithm\based_on_igraph\PageRank.py">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\algorithm\based_on_igraph\degreeDiscount.py">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
         <entry key="\algorithm\degree\DHICM.py">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\algorithm\degree\degreeDiscount.py">
           <value>
             <Attribute>
               <option name="separator" value="," />
@@ -59,6 +129,13 @@
             </Attribute>
           </value>
         </entry>
+        <entry key="\algorithm\pageRank.py">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
         <entry key="\algorithm\test.py">
           <value>
             <Attribute>
@@ -73,7 +150,21 @@
             </Attribute>
           </value>
         </entry>
+        <entry key="\algorithm\test\CBPCA.py">
+          <value>
+            <Attribute>
+              <option name="separator" value=":" />
+            </Attribute>
+          </value>
+        </entry>
         <entry key="\algorithm\test\PN_Discount.py">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\algorithm\test\Tuning_CBPCA.py">
           <value>
             <Attribute>
               <option name="separator" value="," />
@@ -98,6 +189,27 @@
           <value>
             <Attribute>
               <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\dataPreprocessing\read_txt_igraph.py">
+          <value>
+            <Attribute>
+              <option name="separator" value=":" />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\dataPreprocessing\read_txt_nx.py">
+          <value>
+            <Attribute>
+              <option name="separator" value=":" />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\diffusion\Networkx_diffusion.py">
+          <value>
+            <Attribute>
+              <option name="separator" value=":" />
             </Attribute>
           </value>
         </entry>

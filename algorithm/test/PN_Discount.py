@@ -4,7 +4,7 @@ PN=d^2+k_truss^2
 初始网络k_truss值不变
 折扣为，当v有其n邻居被选为种子，其中他们有m条边时，PN=PN-2dm+m^2
 """
-from algorithm.K_core.k_truss import k_truss
+from algorithm.basedCore.k_truss import k_truss
 from heapdict import heapdict
 from timeit import default_timer as timer
 from diffusion.Networkx_diffusion import spread_run_IC

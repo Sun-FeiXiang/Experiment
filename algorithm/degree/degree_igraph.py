@@ -2,7 +2,7 @@
 from igraph import *
 from algorithm.priorityQueue import PriorityQueue as PQ
 import time
-from diffusion import IC
+from diffusion.igraph_diffusion import IC
 
 
 def degree(g, k, p=0.01, mc=1000):

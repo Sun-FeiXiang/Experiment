@@ -1,62 +1,57 @@
 from timeit import default_timer as timer
 import networkx as nx
-
+from diffusion.Networkx_diffusion import spread_run_IC
 """
 PageRank作为一个经典的网页排序算法，在影响最大化中的应用，一般作为一个对照实验。本处的实现主要依据下面论文中的设置
 来源：Scalable Influence Maximization for Prevalent Viral Marketing in Large-Scale Social Networks∗
 对比实验
+
+本文中：
 """
 
 
 def pageRank(G, k, p=.01):
-    pages_rank = nx.pagerank(G, tol=1e-4)  # 输入是有向图
+    start_time = timer()
+    pages_rank = nx.pagerank(G, tol=1e-4,alpha=0.15)
     pages_rank = sorted(pages_rank.items(), key=lambda x: x[1], reverse=True)
-    S = []
+    S, timelapse= [], []
     for u, ranking in pages_rank:
         if len(S) == k:
             break
         S.append(u)
-    return S
+        timelapse.append(timer() - start_time)
+    return (S, timelapse)
 
 
 if __name__ == "__main__":
     import time
 
     start = time.time()
-    G = nx.read_weighted_edgelist("../data/soc-Epinions1.txt", comments='#', nodetype=int, create_using=nx.DiGraph())
-    G1 = G.copy()
+    from dataPreprocessing.read_txt_nx import read_Graph
+
+    G = read_Graph("../data/graphdata/phy.txt")
     read_time = time.time()
     print('读取网络时间：', read_time - start)
+    p = 0.02
+    algorithm_output = pageRank(G, 50, p)
 
-    #生成固定的传播概率
-    from dataPreprocessing.generation_propagation_probability import weight_probability_inEdge
-    weight_probability_inEdge(G)
-
-    I = 1000
-
-    list_IC_random_hep = []
-    temp_time = timer()
-    for k in range(5, 51, 5):
-        S = pageRank(G, k)
-        cal_time = timer() - temp_time
-        print('PageRank算法运行时间：', cal_time)
+    list_IC_hep = []
+    for k in range(1, 51):
+        S = algorithm_output[0][:k]
+        cur_spread = spread_run_IC(G,S,p,10000)
+        cal_time = algorithm_output[1][k - 1]
+        print('pageRank算法运行时间：', cal_time)
         print('k = ', k, '选取节点集为：', S)
-
-        from diffusion import spread_run_IC
-
-        average_cover_size = spread_run_IC(S, G, 1000)
-        print('k=', k, '平均覆盖大小：', average_cover_size)
-
-        list_IC_random_hep.append({
+        print('k=', k, '平均覆盖大小：', cur_spread)
+        list_IC_hep.append({
             'k': k,
             'run time': cal_time,
-            'average cover size': average_cover_size,
+            'average cover size': cur_spread,
             'S': S
         })
         temp_time = timer()  # 记录当前时间
-
     import pandas as pd
 
-    df_IC_random_hep = pd.DataFrame(list_IC_random_hep)
-    df_IC_random_hep.to_csv('../data/output/pageRank/IC_pageRank_Epinions.csv')
+    df_IC_random_hep = pd.DataFrame(list_IC_hep)
+    df_IC_random_hep.to_csv('../data/output/pageRank/IC_pageRank(p=0.02)_phy_Graph.csv')
     print('文件输出完毕——结束')

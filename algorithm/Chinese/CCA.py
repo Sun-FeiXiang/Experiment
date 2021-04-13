@@ -1,30 +1,81 @@
-from algorithm.K_core.k_core_subgraph import find_kcores
-from timeit import default_timer as timer
+from diffusion.Networkx_diffusion import spread_run_IC
+import time
+from dataPreprocessing.read_txt_nx import read_Graph
 
 
-def mark_overlay(G, node, CO_v, d=3):
+def get_node_degree(G):
+    """
+    获取节点的度（两个节点之间至少有一条边）
+    :param G:
+    :return:节点的度
+    """
+    d = dict()
+    for u in G.nodes:
+        d[u] = sum([G[u][v]['weight'] for v in G[u]])
+    return d
+
+
+def node_core_number(g):
+    """
+    修改的，求节点的核心值
+    :param G:
+    :return: 所有节点的核心值
+    """
+    G = g.copy()
+    k_nodes = dict()
+    level = 1
+    node_degree = get_node_degree(G)
+    while len(node_degree):
+        while True:
+            level_node_list = []
+            for item in node_degree.items():  # 返回节点及其度
+                if item[1] <= level:
+                    level_node_list.append(item[0])
+                    # 这里设置了value是从1开始的；
+                    k_nodes[item[0]] = level
+            G.remove_nodes_from(level_node_list)
+            node_degree = get_node_degree(G)
+            if not len(node_degree):
+                return k_nodes
+            # print(sorted(node_degree.items(),key=lambda x: x[1]))
+            if min(node_degree.items(), key=lambda x: x[1])[1] > level:
+                break
+
+        level = min(node_degree.items(), key=lambda x: x[1])[1]
+    return k_nodes
+
+
+def mark_overlay(G, node, CO_v, d):
     """
     使用bfs覆盖
     :param G: networkx对象
     :param node: 开始节点
     :param d: 度
     :param CO_v:访问标识
-    :return: 无，只需将某个节点设置为访问过即可
+    :return: 覆盖的节点集
     """
+    cover_nodes = [node]
     q = []  # 队列
     q.append(node)
+    CO_v[node] = True
     level = 0  # 覆盖第几层
     while len(q) > 0 and level < d:
         v = q.pop(0)  # 弹出第一个节点
-        G_adj = G.adj[node]
+        G_adj = G.adj[v]
         for key, value in G_adj.items():
             if not CO_v[key]:
                 CO_v[key] = True
+                cover_nodes.append(key)
                 q.append(key)
         level = level + 1  # 访问一层
+    return cover_nodes
 
 
-def CCA(G, k, p=0.01, d=1):
+def get_max_core_num(node_core):
+    return sorted(node_core.items(), key=lambda x: x[1], reverse=True)[0][1]
+
+
+def CCA(G, k, p, d):
     """
     :param G: networkx图对象
     :param k: 初始节点集的节点个数
@@ -32,71 +83,59 @@ def CCA(G, k, p=0.01, d=1):
     :param d: 将距离为d的节点标记为覆盖
     :return: 选择的k个点的集合
     """
-    S = []
-    highest_kcore, k_cores = find_kcores(G)  # 返回最大的k_s值及k_cores分数[(k_s,[(node,degree),...]),...]
+    start_time = time.time()
+    S, timelapse = [], []
+    node_degree = get_node_degree(G)
+    node_core = node_core_number(G)
     CO_v = dict()  # 节点覆盖属性
     for node in G.nodes:
         CO_v[node] = False
+    for _ in range(k):
+        max_core_node_list = []  # 最大核列表
+        max_core = get_max_core_num(node_core)
+        for node, core in node_core.items():
+            if core == max_core and not CO_v[node]:
+                max_core_node_list.append(node)
+        D = dict()  # 拥有
+        for u in max_core_node_list:
+            if not CO_v[u] and u in node_degree.keys():
+                D[u] = node_degree[u]
+        # print(D)
+        seed = sorted(D.items(), key=lambda x: x[1], reverse=True)[0][0]
+        S.append(seed)
+        cover_nodes = mark_overlay(G, seed, CO_v, d)
+        for cover_node in cover_nodes:
+            del node_core[cover_node]
+        timelapse.append(time.time() - start_time)
 
-    choose_Num = 0  # 选择的节点数
-    for k_cores_line in k_cores:
-        key = k_cores_line[0]
-        for k_cores_line_one in k_cores_line[1]:
-            node = k_cores_line_one[0]
-            node_degree = k_cores_line_one[1]
-            if choose_Num == k:
-                break
-            if not CO_v[node]:
-                S.append(node)
-                # 标记
-                mark_overlay(G, node, CO_v)
-                choose_Num = choose_Num + 1
-        if choose_Num == k:
-            break
-    return S
-
-
-def sumTrue(CO_v):
-    num = 0
-    for key, value in CO_v.items():
-        if value == True:
-            num = num + 1
-    return num
+    return (S, timelapse)
 
 
 if __name__ == "__main__":
-    import time
-
     start = time.time()
-    from dataPreprocessing.read_txt_nx import read_Graph
-    G = read_Graph("../../data/graphdata/hep.txt")
+    G = read_Graph("../../data/graphdata/")
     read_time = time.time()
     print('读取网络时间：', read_time - start)
-    k = 50
-    temp_time = timer()
-    S = CCA(G, k)
-    cal_time = timer() - temp_time
-    print('CCA算法运行时间：', cal_time)
-    print('选取节点集为：', S)
-    from diffusion import spread_run_IC
+    p = 0.01
+    d = 2
+    algorithm_output = CCA(G, 50, p, d)
 
-    average_cover_size = spread_run_IC(G,S,0.01,1000)
-    print('k =', k, '平均覆盖大小：', average_cover_size)
+    list_IC_hep = []
+    for k in range(1, 51):
+        S = algorithm_output[0][:k]
+        cur_spread = spread_run_IC(G, S, p, 10000)
+        cal_time = algorithm_output[1][k - 1]
+        print('CCA算法运行时间：', cal_time)
+        print('k = ', k, '选取节点集为：', S)
+        print('k=', k, '平均覆盖大小：', cur_spread)
+        list_IC_hep.append({
+            'k': k,
+            'run time': cal_time,
+            'average cover size': cur_spread,
+            'S': S
+        })
+    import pandas as pd
 
-    # I = 1000
-    # result = []
-    # temp_time = timer()
-    # for k in range(5, 51, 5):
-    #
-    #     result.append({
-    #         'k': k,
-    #         'run time': cal_time,
-    #         'average cover size': average_cover_size,
-    #         'S': S
-    #     })
-    #     temp_time = timer()  # 记录当前时间
-    # import pandas as pd
-    #
-    # df_result = pd.DataFrame(result)
-    # df_result.to_csv('../../data/output/CCA/IC_CCA_hep_Graph.csv')
-    # print('文件输出完毕——结束')
+    df_IC_hep = pd.DataFrame(list_IC_hep)
+    df_IC_hep.to_csv('../../data/output/CCA/IC_CCA2(p=0.02)_NetPHY_Graph.csv')
+    print('文件输出完毕——结束')

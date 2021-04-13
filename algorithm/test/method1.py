@@ -4,7 +4,7 @@ local influence = alpha * math.sqrt(k_truss^2+d^2)
 更新
 """
 import random
-from algorithm.K_core.k_truss import k_truss
+from algorithm.basedCore.k_truss import k_truss
 from timeit import default_timer as timer
 import math
 from copy import deepcopy
