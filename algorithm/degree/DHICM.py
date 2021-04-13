@@ -7,26 +7,29 @@
 """
 import time
 import networkx as nx
-
+from heapdict import heapdict
+from algorithm.priorityQueue import PriorityQueue as PQ  # priority queue
 
 def DHICM(G, k, Ep):
-    d = dict()
-    dd = dict()  # 度折扣
-    t = dict()  # 选择邻居的个数
     S, timelapse, start_time = [], [], time.time()
-    for u in G:
-        d[u] = sum([G[u][v]['weight'] for v in G[u]])  # 每条边增加的度 一般是1，也有两个点之间有多条边
-        # d[u] = len(G[u]) # each neighbor adds degree 1
-        dd[u] = d[u]
+    dd = PQ()
+    t = dict()
+    d = dict()
+    for u in G.nodes():
+        d[u] = sum([G[u][v]['weight'] for v in G[u]])
+        dd.add_task(u, -d[u])  # 添加每个节点的度数
         t[u] = 0
+
+    # 贪心的给S加点
     for i in range(k):
-        u, ddv = max(dd.items())
-        dd.pop(u)
+        u, priority = dd.pop_item()  # 基于最大度折扣的节点提取 u及优先级代表节点及其度数
         S.append(u)
         timelapse.append(time.time() - start_time)
-        for v in G[u]:
-            if v not in S:
-                dd[v] = d[v] - 1 - (d[u] - 1) * Ep[(u, v)]
+        for v in G[u]:  # G[u]是u的邻接表
+            if v not in S:  # ！！！
+                t[v] += G[u][v]['weight']
+                priority = d[v] - 1 - (d[u] - 1) * Ep[(u,v)]
+                dd.add_task(v, -priority)
     return (S, timelapse)
 
 

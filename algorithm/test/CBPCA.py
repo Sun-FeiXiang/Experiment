@@ -225,7 +225,7 @@ if __name__ == "__main__":
     G = read_Graph("../../data/facebook_combined.txt")
     read_time = time.time()
     print('读取网络时间：', read_time - start)
-    p = 0.01
+    p = 0.02
     algorithm_output = CBPCA(G, 50, p, 0.1, 2)
     list_IC_hep = []
     for k in range(1, 51):
@@ -244,5 +244,5 @@ if __name__ == "__main__":
         temp_time = timer()  # 记录当前时间
     import pandas as pd
     df_IC_hep = pd.DataFrame(list_IC_hep)
-    df_IC_hep.to_csv('../../data/output/CBPCA/IC_CBPCA(c=0.1,l=2,p=0.01)_facebook_Graph.csv')
+    df_IC_hep.to_csv('../../data/output/CBPCA/IC_CBPCA(c=0.1,l=2,p=0.02)_facebook_Graph.csv')
     print('文件输出完毕——结束')

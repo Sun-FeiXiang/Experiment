@@ -99,7 +99,7 @@ if __name__ == "__main__":
     import time
     start = time.time()
     from dataPreprocessing.read_txt_nx import read_Graph
-    G = read_Graph('../../data/facebook_combined.txt')
+    G = read_Graph('../../data/Amazon0302.txt')
     read_time = time.time()
     print('读取网络时间：', read_time - start)
     p = 0.05
@@ -122,5 +122,5 @@ if __name__ == "__main__":
     import pandas as pd
 
     df_IC_hep = pd.DataFrame(list_IC_hep)
-    df_IC_hep.to_csv('../../data/output/degreeDiscount/IC_degreeDiscount(p=0.05)_facebook_Graph.csv')
+    df_IC_hep.to_csv('../../data/output/degreeDiscount/IC_degreeDiscount(p=0.05)_ama_Graph.csv')
     print('文件输出完毕——结束')

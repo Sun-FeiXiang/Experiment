@@ -192,6 +192,13 @@
             </Attribute>
           </value>
         </entry>
+        <entry key="\dataPreprocessing\analysis.py">
+          <value>
+            <Attribute>
+              <option name="separator" value=":" />
+            </Attribute>
+          </value>
+        </entry>
         <entry key="\dataPreprocessing\read_txt_igraph.py">
           <value>
             <Attribute>
