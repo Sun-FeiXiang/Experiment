@@ -73,6 +73,13 @@
             </Attribute>
           </value>
         </entry>
+        <entry key="\algorithm\MCDE.py">
+          <value>
+            <Attribute>
+              <option name="separator" value=":" />
+            </Attribute>
+          </value>
+        </entry>
         <entry key="\algorithm\PMIA.py">
           <value>
             <Attribute>
@@ -193,6 +200,13 @@
           </value>
         </entry>
         <entry key="\dataPreprocessing\analysis.py">
+          <value>
+            <Attribute>
+              <option name="separator" value=":" />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\dataPreprocessing\modify_formula.py">
           <value>
             <Attribute>
               <option name="separator" value=":" />

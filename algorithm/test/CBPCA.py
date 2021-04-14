@@ -144,7 +144,7 @@ def get_max_core_num(node_core):
     return sorted(node_core.items(), key=lambda x: x[1], reverse=True)[0][1]
 
 
-def get_E_i(G, node_core, node_degree):
+def get_E_i(G, node_core):
     E_i = dict()
     E_min = sys.maxsize
     for node in G.nodes:
@@ -158,7 +158,7 @@ def get_E_i(G, node_core, node_degree):
             else:
                 neighbors_core[cur_node_core] = 1
         for core, num in neighbors_core.items():
-            p_i = num / node_degree[u]
+            p_i = num / len(neighbors)#核心值为
             cur_E_i = cur_E_i - p_i * math.log2(p_i)
         if cur_E_i < E_min:
             E_min = cur_E_i
