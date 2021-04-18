@@ -1,5 +1,5 @@
-from tqdm import tqdm
+import math
 
-bar = tqdm(["a", "b", "c", "d"])
-for char in bar:
-    bar.set_description("Processing %s" % char)
+a = 4/23*math.log2(2/23)+12/23*math.log2(4/23)+5/23*math.log2(5/23)+2/23*math.log2(1/23)
+
+print(a)

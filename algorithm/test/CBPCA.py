@@ -164,10 +164,10 @@ def get_E_i(G, node_core):
             E_min = cur_E_i
         E_i[node] = cur_E_i
     max_core_num = get_max_core_num(node_core)
-    E_i_p = dict()  # 归一化后的信息熵
-    for node, node_E_i in E_i.items():
-        E_i_p[node] = (E_i[node] - E_min) / (math.log2(max_core_num) - E_min)
-    return E_i_p
+    # E_i_p = dict()  # 归一化后的信息熵
+    # for node, node_E_i in E_i.items():
+    #     E_i_p[node] = (E_i[node] - E_min) / (math.log2(max_core_num) - E_min)
+    return E_i
 
 
 def get_core_to_node(node_core):
@@ -195,11 +195,11 @@ def CBPCA(G, k, p, c, l):
     # node_EC = nx.eigenvector_centrality(G)#特征向量中心
     node_h = get_node_h(G)
     node_core = node_core_number(G)
-    node_E_i = get_E_i(G, node_core, node_degree)
+    node_E_i = get_E_i(G, node_core)
     # print(edge_truss_num)
     pn = heapdict()
     for u in G.nodes:
-        pn[u] = -math.sqrt(node_degree[u] ** 2 + node_h[u] ** 2) * node_E_i[u]
+        pn[u] = -math.sqrt(node_degree[u] ** 2)
     S, timelapse = [], []
     S_cover = []
     for _ in range(k):
@@ -222,10 +222,10 @@ if __name__ == "__main__":
     start = time.time()
     from dataPreprocessing.read_txt_nx import read_Graph
 
-    G = read_Graph("../../data/facebook_combined.txt")
+    G = read_Graph("../../data/graphdata/phy.txt")
     read_time = time.time()
     print('读取网络时间：', read_time - start)
-    p = 0.02
+    p = 0.01
     algorithm_output = CBPCA(G, 50, p, 0.1, 2)
     list_IC_hep = []
     for k in range(1, 51):
@@ -242,7 +242,7 @@ if __name__ == "__main__":
             'S': S
         })
         temp_time = timer()  # 记录当前时间
-    import pandas as pd
-    df_IC_hep = pd.DataFrame(list_IC_hep)
-    df_IC_hep.to_csv('../../data/output/CBPCA/IC_CBPCA(c=0.1,l=2,p=0.02)_facebook_Graph.csv')
-    print('文件输出完毕——结束')
+    # import pandas as pd
+    # df_IC_hep = pd.DataFrame(list_IC_hep)
+    # df_IC_hep.to_csv('../../data/output/CBPCA/IC_CBPCA(c=0.1,l=2,p=0.02)_facebook_Graph.csv')
+    # print('文件输出完毕——结束')

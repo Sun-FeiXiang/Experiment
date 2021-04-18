@@ -1,7 +1,0 @@
-Dataset,#Nodes(|V|),#Edges(|E|),Type,Avg.degree,link
-facebook_combined.txt,4039,88234,Undirected,43.7,http://snap.stanford.edu/data/ego-Facebook.html
-Wiki-Vote.txt,7K,104 K,Directed,29.1,
-Google+,108K,14 M,Directed,254.1,
-LiveJournal,5M,69M,Directed,28.5,
-
-

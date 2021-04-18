@@ -40,7 +40,7 @@ if __name__ == "__main__":
     start = time.time()
     from dataPreprocessing.read_txt_nx import read_Graph
 
-    G = read_Graph("../../data/DBLP.txt")
+    G = read_Graph("../../data/graphdata/DBLP.txt")
     read_time = time.time()
     print('读取网络时间：', read_time - start)
     diffusionDegree_output = diffusionDegree(G, 50, 0.05, 1000)

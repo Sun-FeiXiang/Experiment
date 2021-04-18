@@ -1,16 +1,18 @@
 """
 Identification of multi-spreader users in social networks for viral marketing
-
+原论文中，边的权重设为（0，1）的随机值
+theta = 网络的平均度
 
 """
+import networkx as nx
 from heapdict import heapdict
 from timeit import default_timer as timer
-from diffusion.Networkx_diffusion import spread_run_IC, spread_run_LT
+from model.ICM_nx import spread_run_IC,IC
 import math
-from dataPreprocessing.read_txt_nx import read_Graph, avg_degree
+from preprocessing.read_txt_nx import read_Graph, avg_degree,avg_degree2
 import time
-from dataPreprocessing.generation_propagation_probability import fixed_probability
-
+from preprocessing.generation_propagation_probability import fixed_probability,p_random,p_fixed
+from preprocessing.generation_node_threshold import random_threshold
 
 def get_node_core(g):
     """
@@ -50,7 +52,7 @@ def get_node_degree(G):
     """
     d = dict()
     for u in G.nodes:
-        d[u] = sum([G[u][v]['weight'] for v in G[u]])
+        d[u] = G.degree[u]#sum([G[u][v]['weight'] for v in G[u]])
     return d
 
 
@@ -73,7 +75,7 @@ def get_node_entropy(G, node_core):
     return node_entropy
 
 
-def MCDE(G, k, Ep, theta, eta, alpha, beta, gamma):
+def MCDE(G, k, theta, node_threshold, alpha, beta, gamma):
     start_time = timer()
     node_degree = get_node_degree(G)
     node_core = get_node_core(G)
@@ -81,18 +83,18 @@ def MCDE(G, k, Ep, theta, eta, alpha, beta, gamma):
     mcde = heapdict()
     for u in G.nodes:
         mcde[u] = - (alpha * node_core[u] + beta * node_degree[u] + gamma * node_entropy[u])
-    S, timelapse = [], []
+    S, timelapse = set(), []
     while len(S) < k:
         u, u_pn = mcde.popitem()
         sel = True
         for v in S:
             if u in G.neighbors(v):
-                if Embeddeness(G, u, v) > theta:#  or Ep[(u, v)] > eta
+                if Embeddeness(G, u, v) > theta or G[v][u]['p'] > node_threshold[u]:
                     sel = False
         if sel:
-            S.append(u)
+            S.add(u)
             timelapse.append(timer() - start_time)
-    return (S, timelapse)
+    return (list(S), timelapse)
 
 
 def Embeddeness(G, A, B):
@@ -105,17 +107,21 @@ def Embeddeness(G, A, B):
 
 if __name__ == "__main__":
     start = time.time()
-    G = read_Graph("../data/graphdata/hep.txt")
+    #G = read_Graph("../data/graphdata/hep.txt") #针对hep和phy数据集使用该函数读取网络
+    G = nx.read_edgelist("../data/graphdata/NetHEPT.txt",nodetype=int) #其他数据集使用此方式读取
     read_time = time.time()
     print('读取网络时间：', read_time - start)
     p = 0.01
-    Ep = fixed_probability(G, p)
-    theta = avg_degree(G)
-    algorithm_output = MCDE(G, 50, p, theta*2, Ep, 1, 1, 1)
+    Ep = p_fixed(G,p)
+    theta = avg_degree2(G)
+
+    node_threshold = random_threshold(G)
+
+    algorithm_output = MCDE(G, 50,theta, node_threshold, 1, 1, 1)
     list_IC_hep = []
     for k in range(1, 51):
         S = algorithm_output[0][:k]
-        cur_spread = spread_run_IC(G, S, p, 1000)
+        cur_spread = IC(G, S, 1000)
         cal_time = algorithm_output[1][k - 1]
         print('MCDE算法运行时间：', cal_time)
         print('k = ', k, '选取节点集为：', S)

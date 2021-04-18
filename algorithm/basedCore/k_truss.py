@@ -95,7 +95,7 @@ if __name__ == "__main__":
     import time
 
     start = time.time()
-    G = nx.read_weighted_edgelist("../../data/karate.txt", comments='#', nodetype=int, create_using=nx.DiGraph())
+    G = nx.read_weighted_edgelist("../../data/graphdata/karate.txt", comments='#', nodetype=int, create_using=nx.DiGraph())
     read_time = time.time()
     print('读取网络时间：', read_time - start)
     # 生成固定的传播概率为0.01

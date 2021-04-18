@@ -41,7 +41,7 @@ if __name__ == "__main__":
     start = time.time()
     from dataPreprocessing.read_txt_nx import read_Graph
 
-    G = read_Graph("../../data/NetHEPT.txt")
+    G = read_Graph("../../data/graphdata/NetHEPT.txt")
     read_time = time.time()
     print('读取网络时间：', read_time - start)
 

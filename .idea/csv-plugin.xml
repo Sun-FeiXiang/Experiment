@@ -227,7 +227,28 @@
             </Attribute>
           </value>
         </entry>
+        <entry key="\data\introduction.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
         <entry key="\diffusion\Networkx_diffusion.py">
+          <value>
+            <Attribute>
+              <option name="separator" value=":" />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\exercise\test.py">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\model\ICM_nx.py">
           <value>
             <Attribute>
               <option name="separator" value=":" />

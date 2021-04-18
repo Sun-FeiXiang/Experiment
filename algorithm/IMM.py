@@ -80,7 +80,7 @@ def get_mc(G, k, p, l, Rtemp):  # 求对于网络G，IC模型下，在传播概�
 
 
 if __name__ == '__main__':
-    open('../data/NetHEPT.txt').read()
+    open('../data/graphdata/NetHEPT.txt').read()
     G = Graph.Read_Edgelist('../data/NetHEPT.txt', directed=True)
     L = len(G.vs)
 
