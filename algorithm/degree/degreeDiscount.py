@@ -103,10 +103,10 @@ if __name__ == "__main__":
     start = time.time()
     from preprocessing.read_txt_nx import read_Graph
     # G = read_Graph('../../data/graphdata/hep.txt')
-    G = nx.read_edgelist("../../data/graphdata/NetHEPT.txt", nodetype=int)  # 其他数据集使用此方式读取
+    G = nx.read_edgelist("../../data/graphdata/facebook_combined.txt", nodetype=int)  # 其他数据集使用此方式读取
     read_time = time.time()
     print('读取网络时间：', read_time - start)
-    p = 0.01
+    p = 0.03
     p_fixed(G,p)
     output = degreeDiscountIC(G, 50)
     list_IC_hep = []
@@ -127,5 +127,5 @@ if __name__ == "__main__":
     import pandas as pd
 
     df_IC_hep = pd.DataFrame(list_IC_hep)
-    df_IC_hep.to_csv('../../data/output/degreeDiscount/IC_degreeDiscount(p=0.01)_NetHEPT_Graph.csv')
-    # print('文件输出完毕——结束')
+    df_IC_hep.to_csv('../../data/output/degreeDiscount/IC_degreeDiscount(p=0.03)_facebook.csv')
+    print('文件输出完毕——结束')

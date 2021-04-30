@@ -1,5 +1,11 @@
-from diffusion.Networkx_diffusion import spread_run_IC
+import networkx as nx
+
+from model.ICM_nx import spread_run_IC, IC
 from heapdict import heapdict
+from read_txt_nx import read_Graph
+from time import time
+from preprocessing.generation_propagation_probability import p_fixed,p_random
+
 def node_core_number(g):
     """
     修改的，求节点的核心值
@@ -38,7 +44,8 @@ def get_node_degree(G):
     """
     d = dict()
     for u in G.nodes:
-        d[u] = sum([G[u][v]['weight'] for v in G[u]])
+        # d[u] = sum([G[u][v]['weight'] for v in G[u]])
+        d[u] = len(G[u])
     return d
 
 
@@ -53,7 +60,8 @@ def get_node_h(G):
         neighbors = list(G.neighbors(u))
         neighbors_degree = []
         for v in neighbors:
-            neighbors_degree.append(sum([G[v][w]['weight'] for w in G[v]]))
+            # neighbors_degree.append(sum([G[v][w]['weight'] for w in G[v]]))
+            neighbors_degree.append(len(G[v]))
         index_list = list(range(1, len(neighbors) + 1))
         neighbors_degree = sorted(neighbors_degree, reverse=True)
         h = 1
@@ -64,6 +72,7 @@ def get_node_h(G):
         node_h[u] = h
     return node_h
 
+
 def get_node_influence(G):
     """
     获得节点影响力较大的前50个节点
@@ -72,42 +81,41 @@ def get_node_influence(G):
     """
     inf = heapdict()
     for node in G.nodes:
-        inf[node] = -spread_run_IC(G,[node],0.01,1000)
+        inf[node] = -IC(G, [node], 1000)
     result = dict()
-    for _ in range(50):
-        u,u_inf = inf.popitem()
+    for _ in range(nx.number_of_nodes(G)):
+        u, u_inf = inf.popitem()
         result[u] = -u_inf
     return result
 
+
 if __name__ == "__main__":
-    import time
-
-    start = time.time()
-    from dataPreprocessing.read_txt_nx import read_Graph
-
-    G = read_Graph("../data/graphdata/DBLP.txt")
-    read_time = time.time()
+    start = time()
+    #G = read_Graph("../data/graphdata/phy.txt")
+    G = nx.read_adjlist("../data/graphdata/DBLP.txt",nodetype=int)
+    read_time = time()
     print('读取网络时间：', read_time - start)
-
+    p_fixed(G,0.01)
     node_inf = get_node_influence(G)
     node_core = node_core_number(G)
     node_degree = get_node_degree(G)
     node_h = get_node_h(G)
 
     info = []
-    for u,u_inf in node_inf.items():
+    for u, u_inf in node_inf.items():
         u_core = node_core[u]
         u_degree = node_degree[u]
         u_h = node_h[u]
         info.append({
             'u': u,
-            'influence':u_inf,
+            'influence': u_inf,
             'degree': u_degree,
             'core': u_core,
             'h': u_h
         })
 
     import pandas as pd
+
     df_IC_hep = pd.DataFrame(info)
-    df_IC_hep.to_csv('../data/output/DBLP_info.csv')
+    df_IC_hep.to_csv('../data/output/DBLP_all_info.csv')
     print('文件输出完毕——结束')

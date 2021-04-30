@@ -12,7 +12,7 @@ from queue import Queue
 from algorithm.basedCore.k_truss import k_truss
 from heapdict import heapdict
 from timeit import default_timer as timer
-from diffusion.Networkx_diffusion import spread_run_IC, spread_run_LT
+from model.ICM_nx import spread_run_IC, IC
 import math
 import networkx as nx
 import sys

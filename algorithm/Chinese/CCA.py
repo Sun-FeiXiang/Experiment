@@ -1,6 +1,8 @@
-from diffusion.Networkx_diffusion import spread_run_IC
+from model.ICM_nx import spread_run_IC,IC
 import time
-from dataPreprocessing.read_txt_nx import read_Graph
+from preprocessing.read_txt_nx import read_Graph
+from preprocessing.generation_propagation_probability import p_fixed,p_random
+import networkx as nx
 
 
 def get_node_degree(G):
@@ -11,7 +13,8 @@ def get_node_degree(G):
     """
     d = dict()
     for u in G.nodes:
-        d[u] = sum([G[u][v]['weight'] for v in G[u]])
+        #d[u] = sum([G[u][v]['weight'] for v in G[u]])
+        d[u] = len(G[u])
     return d
 
 
@@ -75,11 +78,10 @@ def get_max_core_num(node_core):
     return sorted(node_core.items(), key=lambda x: x[1], reverse=True)[0][1]
 
 
-def CCA(G, k, p, d):
+def CCA(G, k, d):
     """
     :param G: networkx图对象
     :param k: 初始节点集的节点个数
-    :param p: 传播概率
     :param d: 将距离为d的节点标记为覆盖
     :return: 选择的k个点的集合
     """
@@ -113,17 +115,18 @@ def CCA(G, k, p, d):
 
 if __name__ == "__main__":
     start = time.time()
-    G = read_Graph("../../data/graphdata/")
+    G = nx.read_edgelist("../../data/graphdata/NetHEPT.txt", nodetype=int)  # 其他数据集使用此方式读取
     read_time = time.time()
     print('读取网络时间：', read_time - start)
-    p = 0.01
+    p = 0.05
+    p_random(G)
     d = 2
-    algorithm_output = CCA(G, 50, p, d)
+    algorithm_output = CCA(G, 50, d)
 
     list_IC_hep = []
     for k in range(1, 51):
         S = algorithm_output[0][:k]
-        cur_spread = spread_run_IC(G, S, p, 10000)
+        cur_spread = IC(G, S, 10000)
         cal_time = algorithm_output[1][k - 1]
         print('CCA算法运行时间：', cal_time)
         print('k = ', k, '选取节点集为：', S)
@@ -137,5 +140,5 @@ if __name__ == "__main__":
     import pandas as pd
 
     df_IC_hep = pd.DataFrame(list_IC_hep)
-    df_IC_hep.to_csv('../../data/output/CCA/IC_CCA2(p=0.02)_NetPHY_Graph.csv')
+    df_IC_hep.to_csv('../../data/output/CCA/IC_CCA2(p=random)_NetHEPT_Graph.csv')
     print('文件输出完毕——结束')
