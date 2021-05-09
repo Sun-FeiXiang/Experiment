@@ -7,15 +7,15 @@ Core-based edge covering algorithm
 选择pn值大的点，覆盖周围truss值大的边，并标记相应的点，更新周围pn值
 
 """
-from queue import Queue
-
-from algorithm.basedCore.k_truss import k_truss
 from heapdict import heapdict
 from timeit import default_timer as timer
 from model.ICM_nx import spread_run_IC, IC
 import math
 import networkx as nx
 import sys
+from preprocessing.generation_propagation_probability import p_fixed
+from time import time
+from preprocessing.read_txt_nx import read_Graph
 
 
 def edge_truss_number(G):
@@ -39,7 +39,7 @@ def edge_truss_number(G):
     return truss_number
 
 
-def node_core_number(g):
+def get_node_core_number(g, node_degree):
     """
     修改的，求节点的核心值
     :param G:
@@ -48,7 +48,6 @@ def node_core_number(g):
     G = g.copy()
     k_nodes = dict()
     level = 1
-    node_degree = get_node_degree(G)
     while len(node_degree):
         while True:
             level_node_list = []
@@ -69,26 +68,13 @@ def node_core_number(g):
     return k_nodes
 
 
-def k_core_subGraph(G, k):
-    node_core_num = node_core_number(G)
-    g = G.copy()
-    for node, core_num in node_core_num.items():
-        if core_num == k:
-            g.remove_node(node)
-    return g
-
-
-def get_node_degree(G):
-    """
-    获取节点的度（两个节点之间至少有一条边）
-    :param G:
-    :return:节点的度
-    """
-    d = dict()
-    for u in G.nodes:
-        d[u] = sum([G[u][v]['weight'] for v in G[u]])
-    return d
-
+# def k_core_subGraph(G, k):
+#     node_core_num = get_node_core_number(G)
+#     g = G.copy()
+#     for node, core_num in node_core_num.items():
+#         if core_num == k:
+#             g.remove_node(node)
+#     return g
 
 def edge_cover(G, node, edge_truss_number, c, l):
     """
@@ -117,18 +103,16 @@ def edge_cover(G, node, edge_truss_number, c, l):
     return cover_list
 
 
-def get_node_h(G):
+def get_node_h(G, node_degree):
     """
     计算节点的H指数，时间复杂度O(nd)
-    :param G:
-    :return:
     """
     node_h = dict()
     for u in G.nodes:
         neighbors = list(G.neighbors(u))
         neighbors_degree = []
         for v in neighbors:
-            neighbors_degree.append(sum([G[v][w]['weight'] for w in G[v]]))
+            neighbors_degree.append(node_degree[v])
         index_list = list(range(1, len(neighbors) + 1))
         neighbors_degree = sorted(neighbors_degree, reverse=True)
         h = 1
@@ -140,15 +124,11 @@ def get_node_h(G):
     return node_h
 
 
-def get_max_core_num(node_core):
-    return sorted(node_core.items(), key=lambda x: x[1], reverse=True)[0][1]
-
-
-def get_E_i(G, node_core):
-    E_i = dict()
-    E_min = sys.maxsize
+def get_node_E(G, node_core):
+    node_E = dict()
+    # E_min = sys.maxsize
     for node in G.nodes:
-        cur_E_i = 0
+        cur_E = 0
         neighbors = list(G.neighbors(node))
         neighbors_core = dict()  # 邻居在每个核心的个数core:num
         for u in neighbors:
@@ -158,50 +138,47 @@ def get_E_i(G, node_core):
             else:
                 neighbors_core[cur_node_core] = 1
         for core, num in neighbors_core.items():
-            p_i = num / len(neighbors)#核心值为
-            cur_E_i = cur_E_i - p_i * math.log2(p_i)
-        if cur_E_i < E_min:
-            E_min = cur_E_i
-        E_i[node] = cur_E_i
-    max_core_num = get_max_core_num(node_core)
+            p_i = num / len(neighbors)  # 核心值为
+            cur_E = cur_E - p_i * math.log2(p_i)
+        # if cur_E_i < E_min:
+        #     E_min = cur_E_i
+        node_E[node] = cur_E
     # E_i_p = dict()  # 归一化后的信息熵
     # for node, node_E_i in E_i.items():
     #     E_i_p[node] = (E_i[node] - E_min) / (math.log2(max_core_num) - E_min)
-    return E_i
+    return node_E
 
 
-def get_core_to_node(node_core):
+def get_node_degree(G):
     """
-    转换node：core ---> core:[node1,node2,...]
-    :param node_core:
+    获取节点的度（两个节点之间至少有一条边）
+    :param G:
+    :return:节点的度
+    """
+    d = dict()
+    for u in G.nodes:
+        d[u] = sum([G[u][v]['weight'] for v in G[u]])
+    return d
+
+
+def CBPCA(G, k, c, l):
+    """
+    :param G: networkx图对象
+    :param k: 种子集合的大小
+    :param c: 每层覆盖率
+    :param l: 覆盖层次
     :return:
     """
-    highest_kcore = 0
-    k_cores = dict()
-    for node, core in node_core.items():
-        if highest_kcore < core:
-            highest_kcore = core
-        if core in k_cores:
-            k_cores[core].append(node)
-        else:
-            k_cores[core] = [node]
-    return highest_kcore, k_cores
-
-
-def CBPCA(G, k, p, c, l):
     start_time = timer()
-    edge_truss_num = edge_truss_number(G)
-    node_degree = get_node_degree(G)
-    # node_EC = nx.eigenvector_centrality(G)#特征向量中心
-    node_h = get_node_h(G)
-    node_core = node_core_number(G)
-    node_E_i = get_E_i(G, node_core)
-    # print(edge_truss_num)
+    edge_truss_num = edge_truss_number(G)  # 边的truss值
+    node_degree = get_node_degree(G)  # 节点的度
+    node_h = get_node_h(G, node_degree)  # 节点的H指数
+    node_core = get_node_core_number(G, node_degree)  # 节点的核心值
+    node_E = get_node_E(G, node_core)  # 节点的信息熵
     pn = heapdict()
     for u in G.nodes:
-        pn[u] = -math.sqrt(node_degree[u] ** 2)
-    S, timelapse = [], []
-    S_cover = []
+        pn[u] = -math.sqrt(node_degree[u] ** 2 + node_h[u] ** 2) * node_E[u]
+    S, timelapse, S_cover = [], [], []
     for _ in range(k):
         u, u_pn = pn.popitem()
         S.append(u)
@@ -212,27 +189,24 @@ def CBPCA(G, k, p, c, l):
         for cover_one in cur_cover_list:  # 弹出这些节点
             if cover_one in pn.keys():
                 pn.pop(cover_one)
-
     return (S, timelapse)
 
 
 if __name__ == "__main__":
-    import time
-
-    start = time.time()
-    from dataPreprocessing.read_txt_nx import read_Graph
-
-    G = read_Graph("../../data/graphdata/phy.txt")
-    read_time = time.time()
+    start = time()
+    #G = read_Graph("../../data/graphdata/hep.txt")
+    G = nx.read_edgelist("../../data/graphdata/email.txt", nodetype=int)  # 其他数据集使用此方式读取
+    read_time = time()
     print('读取网络时间：', read_time - start)
-    p = 0.01
-    algorithm_output = CBPCA(G, 50, p, 0.1, 2)
+    p = 0.05
+    p_fixed(G, p)
+    algorithm_output = CBPCA(G, 50, p * 10, 2)
     list_IC_hep = []
     for k in range(1, 51):
         S = algorithm_output[0][:k]
-        cur_spread = spread_run_IC(G, S, p, 1000)
+        cur_spread = IC(G, S, 10000)
         cal_time = algorithm_output[1][k - 1]
-        print('CBECA算法运行时间：', cal_time)
+        print('CBPCA算法运行时间：', cal_time)
         print('k = ', k, '选取节点集为：', S)
         print('k=', k, '平均覆盖大小：', cur_spread)
         list_IC_hep.append({
@@ -242,7 +216,8 @@ if __name__ == "__main__":
             'S': S
         })
         temp_time = timer()  # 记录当前时间
-    # import pandas as pd
-    # df_IC_hep = pd.DataFrame(list_IC_hep)
-    # df_IC_hep.to_csv('../../data/output/CBPCA/IC_CBPCA(c=0.1,l=2,p=0.02)_facebook_Graph.csv')
-    # print('文件输出完毕——结束')
+    import pandas as pd
+
+    df_IC_hep = pd.DataFrame(list_IC_hep)
+    df_IC_hep.to_csv('../../data/output/CBPCA/IC_CBPCA(p=0.05,l=2)_email.csv')
+    print('文件输出完毕——结束')

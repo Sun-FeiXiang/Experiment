@@ -52,4 +52,5 @@ def p_fixed(G,p):
     :return: 字典，每条边：概率
     """
     for edge in G.edges:
+        G.edges[edge]['weight'] = 1
         G.edges[edge]['p'] = p

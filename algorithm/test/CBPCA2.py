@@ -15,7 +15,8 @@ import math
 import networkx as nx
 import sys
 from preprocessing.read_txt_nx import read_Graph
-
+import numpy as np
+from preprocessing.generation_propagation_probability import p_fixed,p_random
 
 def edge_truss_number(G):
     """
@@ -36,6 +37,41 @@ def edge_truss_number(G):
         truss_number[edge] = inter_node_num + 1 + G[start][end]['weight']  # 边的truss值是交集+2+两点之间边的个数-1
         truss_number[edge[1], edge[0]] = truss_number[edge]  # 无向图
     return truss_number
+
+
+def get_node_degree(G):
+    """
+    获取节点的度（两个节点之间至少有一条边）
+    :param G:
+    :return:节点的度
+    """
+    d = dict()
+    for u in G.nodes:
+        d[u] = sum([G[u][v]['weight'] for v in G[u]])
+    return d
+
+
+def get_node_h(G):
+    """
+    计算节点的H指数，时间复杂度O(nd)
+    :param G:
+    :return:
+    """
+    node_h = dict()
+    for u in G.nodes:
+        neighbors = list(G.neighbors(u))
+        neighbors_degree = []
+        for v in neighbors:
+            neighbors_degree.append(sum([G[v][w]['weight'] for w in G[v]]))
+        index_list = list(range(1, len(neighbors) + 1))
+        neighbors_degree = sorted(neighbors_degree, reverse=True)
+        h = 1
+        for i, nd in zip(index_list, neighbors_degree):
+            if i == nd:
+                h = i
+                break
+        node_h[u] = h
+    return node_h
 
 
 def get_node_core_number(g):
@@ -67,48 +103,53 @@ def get_node_core_number(g):
         level = min(node_degree.items(), key=lambda x: x[1])[1]
     return k_nodes
 
-def get_max_core_num(node_core):
-    return sorted(node_core.items(), key=lambda x: x[1], reverse=True)[0][1]
 
-def get_k_shell(G,node_core):
+def get_node_entropy(G, node_core):
     """
-    获得每一层核的节点,及核心层从大到小
+    获得计算节点信息熵
     :param G:
     :param node_core:
     :return:
     """
-    k_shell = dict()
-    k_s = []
-    for u,u_core in node_core.items():
-        if u_core in k_shell.keys():
-            k_shell[u_core].append(u)
-        else:
-            k_s.append(u_core)
-            k_shell[u_core] = [u]
-    k_s.sort(reverse=True)#排序
-    return k_shell,k_s
+    node_entropy = dict()
+    for node in G.nodes:
+        neighbors = list(G.neighbors(node))
+        neighbors_core = dict()  # 邻居在每个核心的个数core:num
+        for u in neighbors:
+            cur_node_core = node_core[u]  # 获取当前节点的核心值
+            if cur_node_core in neighbors_core.keys():
+                neighbors_core[cur_node_core] = neighbors_core[cur_node_core] + 1
+            else:
+                neighbors_core[cur_node_core] = 1
+        cur_node_entropy = 0
+        for core, num in neighbors_core.items():
+            p_i = num / len(neighbors)  # 核心值为
+            cur_node_entropy = cur_node_entropy + math.log(p_i, math.e)
+        node_entropy[node] = -cur_node_entropy
+    return node_entropy
+
+def get_node_GI(node_degree, node_entropy):
+    avg_degree = np.mean(list(node_degree.values()))
+    node_GI = dict()
+    for u, u_entropy in node_entropy.items():
+        node_GI[u] = u_entropy * avg_degree
+    return node_GI
 
 
-def k_core_subGraph(G, k):
-    node_core_num = get_node_core_number(G)
-    g = G.copy()
-    for node, core_num in node_core_num.items():
-        if core_num == k:
-            g.remove_node(node)
-    return g
+def get_node_LI(node_degree, node_h):
+    node_LI = dict()
+    for u, u_d in node_degree.items():
+        node_LI[u] = math.sqrt(u_d ** 2 + node_h[u] ** 2)
+    return node_LI
 
 
-def get_node_degree(G):
-    """
-    获取节点的度（两个节点之间至少有一条边）
-    :param G:
-    :return:节点的度
-    """
-    d = dict()
-    for u in G.nodes:
-        d[u] = sum([G[u][v]['weight'] for v in G[u]])
-    return d
-
+def normalized(node_attributes):
+    min_node_attribute = min(list(node_attributes.values()))
+    max_node_attribute = max(list(node_attributes.values()))
+    new_node_attributes = dict()
+    for u,u_a in node_attributes.items():
+        new_node_attributes[u] = (u_a-min_node_attribute)/(max_node_attribute-min_node_attribute)
+    return new_node_attributes
 
 def edge_cover(G, node, edge_truss_number, c, l):
     """
@@ -137,110 +178,39 @@ def edge_cover(G, node, edge_truss_number, c, l):
     return cover_list
 
 
-def get_node_h(G):
-    """
-    计算节点的H指数，时间复杂度O(nd)
-    :param G:
-    :return:
-    """
-    node_h = dict()
-    for u in G.nodes:
-        neighbors = list(G.neighbors(u))
-        neighbors_degree = []
-        for v in neighbors:
-            neighbors_degree.append(sum([G[v][w]['weight'] for w in G[v]]))
-        index_list = list(range(1, len(neighbors) + 1))
-        neighbors_degree = sorted(neighbors_degree, reverse=True)
-        h = 1
-        for i, nd in zip(index_list, neighbors_degree):
-            if i == nd:
-                h = i
-                break
-        node_h[u] = h
-    return node_h
+def get_node_local_shell(node_core):
+    #获得节点所在的核心层
+    result_set = set()
+    for n,u_core in node_core.items():
+        result_set.add(u_core)
+    result_list = list(result_set)
+    sorted(result_list,reverse=True)
+    index = range(0,len(result_list))
+    return dict(zip(result_list,index))
 
+def sigmoid(x,a):
+    return 1.0 / (1 + np.exp(-a*x))
 
-def get_entropy_p(G,node_core):
-    """
-    获得计算信息熵所需的节点概率值
-    :param G:
-    :param node_core:
-    :return:
-    """
-    k_shell, k_s = get_k_shell(G,node_core)
-    node_p_i = dict()
-    for u in G.nodes:
-        N_k_S = dict() #统计u的邻居各个核层的各有多少个
-        for v in G.neighbors(u):
-            v_core = node_core[v]
-            if v_core not in N_k_S.keys():
-                N_k_S[v_core] = 1
-            else:
-                N_k_S[v_core] = N_k_S[v_core] + 1
-        cur_p_i = 0
-        for k_s,value in N_k_S.items():
-            cur_k_shell_size = len(k_shell[k_s])
-            p_i = value/cur_k_shell_size
-
-
-
-
-def get_entropy(G, node_core):
-    E_i = dict()
-    E_min = sys.maxsize
-    for node in G.nodes:
-        cur_E_i = 0
-        neighbors = list(G.neighbors(node))
-        neighbors_core = dict()  # 邻居在每个核心的个数core:num
-        for u in neighbors:
-            cur_node_core = node_core[u]  # 获取当前节点的核心值
-            if cur_node_core in neighbors_core.keys():
-                neighbors_core[cur_node_core] = neighbors_core[cur_node_core] + 1
-            else:
-                neighbors_core[cur_node_core] = 1
-        for core, num in neighbors_core.items():
-            p_i = num / len(neighbors)#核心值为
-            cur_E_i = cur_E_i - p_i * math.log2(p_i)
-        if cur_E_i < E_min:
-            E_min = cur_E_i
-        E_i[node] = cur_E_i
-    max_core_num = get_max_core_num(node_core)
-    # E_i_p = dict()  # 归一化后的信息熵
-    # for node, node_E_i in E_i.items():
-    #     E_i_p[node] = (E_i[node] - E_min) / (math.log2(max_core_num) - E_min)
-    return E_i
-
-
-def get_core_to_node(node_core):
-    """
-    转换node：core ---> core:[node1,node2,...]
-    :param node_core:
-    :return:
-    """
-    highest_kcore = 0
-    k_cores = dict()
-    for node, core in node_core.items():
-        if highest_kcore < core:
-            highest_kcore = core
-        if core in k_cores:
-            k_cores[core].append(node)
-        else:
-            k_cores[core] = [node]
-    return highest_kcore, k_cores
-
-
-def CBPCA(G, k, p, c, l):
+def CBPCA(G, k, pp, c, l):
     start_time = timer()
-    edge_truss_num = edge_truss_number(G)
-    node_degree = get_node_degree(G)
-    # node_EC = nx.eigenvector_centrality(G)#特征向量中心
-    node_h = get_node_h(G)
-    node_core = node_core_number(G)
-    node_E_i = get_E_i(G, node_core)
-    # print(edge_truss_num)
+    edge_truss_num = edge_truss_number(G)#获取边的truss值
+    node_degree = get_node_degree(G)#获取节点度
+    node_h = get_node_h(G)#获取节点的h指数
+    node_core = get_node_core_number(G)#获取节点的核心值
+    node_entropy = get_node_entropy(G, node_core)#获取节点熵
+
+    node_GI = get_node_GI(node_degree,node_entropy)
+    node_GI_n = normalized(node_entropy)
+    node_LI = get_node_LI(node_degree,node_h)
+    node_LI_n = normalized(node_LI)
+
+    node_local_shell = get_node_local_shell(node_core)
     pn = heapdict()
     for u in G.nodes:
-        pn[u] = -math.sqrt(node_degree[u] ** 2)
+        # u_core = node_core[u]#节点核心值
+        # l = node_local_shell[u_core] #核心层位置
+        # u_lambda = sigmoid(l,pp)
+        pn[u] = -(node_LI[u]+node_GI[u])
     S, timelapse = [], []
     S_cover = []
     for _ in range(k):
@@ -259,17 +229,23 @@ def CBPCA(G, k, p, c, l):
 
 if __name__ == "__main__":
     import time
+
     start = time.time()
     G = read_Graph("../../data/graphdata/hep.txt")
     read_time = time.time()
-    #G.add_nodes_from(G.nodes, weight=1)#添加weight的默认值
+    # G.add_nodes_from(G.nodes, weight=1)#添加weight的默认值
     print('读取网络时间：', read_time - start)
     p = 0.01
+    p_fixed(G,p)
+    # for pp in range(10):
+    #     algorithm_output = CBPCA(G, 10, pp, 0.1, 2)
+    #     cur_spread = IC(G, algorithm_output[0], 1000)
+    #     print(cur_spread)
     algorithm_output = CBPCA(G, 50, p, 0.1, 2)
     list_IC_hep = []
     for k in range(1, 51):
         S = algorithm_output[0][:k]
-        cur_spread = spread_run_IC(G, S, p, 1000)
+        cur_spread = IC(G, S, 1000)
         cal_time = algorithm_output[1][k - 1]
         print('CBECA算法运行时间：', cal_time)
         print('k = ', k, '选取节点集为：', S)
@@ -280,7 +256,6 @@ if __name__ == "__main__":
             'average cover size': cur_spread,
             'S': S
         })
-        temp_time = timer()  # 记录当前时间
     # import pandas as pd
     # df_IC_hep = pd.DataFrame(list_IC_hep)
     # df_IC_hep.to_csv('../../data/output/CBPCA/IC_CBPCA(c=0.1,l=2,p=0.02)_facebook_Graph.csv')

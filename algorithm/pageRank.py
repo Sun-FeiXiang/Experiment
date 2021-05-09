@@ -25,7 +25,8 @@ def pageRank(G, k):
 
 if __name__ == "__main__":
     start = time()
-    G = read_Graph("../data/graphdata/phy.txt")
+    #G = read_Graph("../data/graphdata/phy.txt")
+    G = nx.read_edgelist("../data/graphdata/email.txt", nodetype=int)  # 其他数据集使用此方式读取
     read_time = time()
     print('读取网络时间：', read_time - start)
     p = 0.05
@@ -35,7 +36,7 @@ if __name__ == "__main__":
     list_IC_hep = []
     for k in range(1, 51):
         S = algorithm_output[0][:k]
-        cur_spread = IC(G,S,1000)
+        cur_spread = IC(G,S,10000)
         cal_time = algorithm_output[1][k - 1]
         print('pageRank算法运行时间：', cal_time)
         print('k = ', k, '选取节点集为：', S)
@@ -49,5 +50,5 @@ if __name__ == "__main__":
     import pandas as pd
 
     df_IC_random_hep = pd.DataFrame(list_IC_hep)
-    df_IC_random_hep.to_csv('../data/output/pageRank/IC_pageRank(p=0.05)_hep.csv')
+    df_IC_random_hep.to_csv('../data/output/pageRank/IC_pageRank(p=0.05)_email.csv')
     print('文件输出完毕——结束')
