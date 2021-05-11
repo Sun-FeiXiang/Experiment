@@ -5,11 +5,11 @@
 from model.ICM_nx import spread_run_IC,IC
 from algorithm.priorityQueue import PriorityQueue as PQ  # priority queue
 from timeit import default_timer as timer
-from preprocessing.generation_propagation_probability import p_fixed,p_random
+from preprocessing.generation_propagation_probability import p_fixed,p_random,p_inEdge,weight_fixed
 import networkx as nx
 
 
-def degreeDiscountIC(G, k, p=.01):
+def degreeDiscountIC(G, k):
     """
     在独立级联模型中查找要传播的初始节点集（带优先级队列）
     Input: G -- networkx 图对象
@@ -25,8 +25,8 @@ def degreeDiscountIC(G, k, p=.01):
 
     # 初始度折扣
     for u in G.nodes():
-        #d[u] = sum([G[u][v]['weight'] for v in G[u]])
-        d[u] = len(G[u]) # each neighbor adds degree 1
+        d[u] = sum([G[u][v]['weight'] for v in G[u]])
+        #d[u] = len(G[u]) # each neighbor adds degree 1
         dd.add_task(u, -d[u])  # 添加每个节点的度数
         t[u] = 0
 
@@ -37,9 +37,9 @@ def degreeDiscountIC(G, k, p=.01):
         timelapse.append(timer() - start_time)
         for v in G[u]:  # G[u]是u的邻接表
             if v not in S:  # ！！！
-                #t[v] += G[u][v]['weight']
-                t[v] += 1
-                priority = d[v] - 2 * t[v] - (d[v] - t[v]) * t[v] * p
+                t[v] += G[u][v]['weight']
+                #t[v] += 1
+                priority = d[v] - 2 * t[v] - (d[v] - t[v]) * t[v] * G[u][v]['p']
                 dd.add_task(v, -priority)
     return (S, timelapse)
 
@@ -102,14 +102,17 @@ if __name__ == "__main__":
     import time
     start = time.time()
     from preprocessing.read_txt_nx import read_Graph
-    # G = read_Graph('../../data/graphdata/hep.txt')
-    G = nx.read_edgelist("../../data/graphdata/facebook_combined.txt", nodetype=int)  # 其他数据集使用此方式读取
+    G = read_Graph('../../data/graphdata/hep.txt',directed=True)#读取为有向图
+    #G = nx.read_edgelist("../../data/graphdata/facebook_combined.txt", nodetype=int)  # 其他数据集使用此方式读取
+    #weight_fixed(G)#设置默认权重为1
     read_time = time.time()
     print('读取网络时间：', read_time - start)
-    p = 0.03
-    p_fixed(G,p)
+    p = 0.01
+    # p_fixed(G,p)
+    p_inEdge(G)
     output = degreeDiscountIC(G, 50)
     list_IC_hep = []
+    print("p=1/inEdge,I=10000,data=hep,DiGraph")
     for k in range(1, 51):
         S = output[0][:k]
         cur_spread = IC(G, S,10000)
@@ -127,5 +130,5 @@ if __name__ == "__main__":
     import pandas as pd
 
     df_IC_hep = pd.DataFrame(list_IC_hep)
-    df_IC_hep.to_csv('../../data/output/degreeDiscount/IC_degreeDiscount(p=0.03)_facebook.csv')
+    df_IC_hep.to_csv('../../data/output/degreeDiscount/IC_degreeDiscount(p=1/inEdge)_hep_DiGraph.csv')
     print('文件输出完毕——结束')

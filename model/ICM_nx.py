@@ -87,8 +87,8 @@ def IC(G, S, mc=10000):
         while i < len(T):
             for v in G[T[i]]:
                 if v not in T:
-                    #w = G[T[i]][v]['weight']  # 两个节点间边的数目
-                    if random.random() <= G[T[i]][v]['p']: #1 - (1 - G[T[i]][v]['p']) ** w:  # 如果至少一条边被影响
+                    w = G[T[i]][v]['weight']  # 两个节点间边的数目
+                    if random.random() <= 1 - (1 - G[T[i]][v]['p']) ** w:  # 如果至少一条边被影响G[T[i]][v]['p']: #
                         T.append(v)
             i += 1
         spread.append(len(T))

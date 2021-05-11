@@ -7,16 +7,18 @@ Core-based edge covering algorithm
 选择pn值大的点，覆盖周围truss值大的边，并标记相应的点，更新周围pn值
 
 """
+import random
+
 from heapdict import heapdict
 from timeit import default_timer as timer
 from model.ICM_nx import spread_run_IC, IC
 import math
 import networkx as nx
 import sys
-from preprocessing.generation_propagation_probability import p_fixed
+from preprocessing.generation_propagation_probability import p_fixed,fixed_weight,p_random
 from time import time
 from preprocessing.read_txt_nx import read_Graph
-
+import pandas as pd
 
 def edge_truss_number(G):
     """
@@ -88,6 +90,7 @@ def edge_cover(G, node, edge_truss_number, c, l):
     q = [node]
     cover_list = []
     level = 0
+    c = random.random()
     while len(q) > 0 and level < l:
         u = q.pop(0)
         u_neighbors = list(G.neighbors(u))
@@ -191,20 +194,41 @@ def CBPCA(G, k, c, l):
                 pn.pop(cover_one)
     return (S, timelapse)
 
+def cal_node_NI(G):
+    node_degree = get_node_degree(G)  # 节点的度
+    node_h = get_node_h(G, node_degree)  # 节点的H指数
+    node_core = get_node_core_number(G, node_degree)  # 节点的核心值
+    node_E = get_node_E(G, node_core)  # 节点的信息熵
+    ni = heapdict()
+    for u in G.nodes:
+        ni[u] = -math.sqrt(node_degree[u] ** 2 + node_h[u] ** 2) * node_E[u]
+    info = []
+    for _ in range(len(G.nodes)):
+        u,u_ni = ni.popitem()
+        info.append({
+            'u': u,
+            'NI': -u_ni
+        })
+    df_IC_hep = pd.DataFrame(info)
+    df_IC_hep.to_csv('../../data/output/facebook_NI.csv')
+    print('文件输出完毕——结束')
+
 
 if __name__ == "__main__":
     start = time()
-    #G = read_Graph("../../data/graphdata/hep.txt")
-    G = nx.read_edgelist("../../data/graphdata/email.txt", nodetype=int)  # 其他数据集使用此方式读取
+    G = read_Graph("../../data/graphdata/hep.txt")
+    # G = nx.read_edgelist("../../data/graphdata/facebook_combined.txt", nodetype=int)  # 其他数据集使用此方式读取
+    #fixed_weight(G)
+    #cal_node_NI(G)
     read_time = time()
     print('读取网络时间：', read_time - start)
     p = 0.05
-    p_fixed(G, p)
+    p_random(G)
     algorithm_output = CBPCA(G, 50, p * 10, 2)
     list_IC_hep = []
     for k in range(1, 51):
         S = algorithm_output[0][:k]
-        cur_spread = IC(G, S, 10000)
+        cur_spread = IC(G, S, 1000)
         cal_time = algorithm_output[1][k - 1]
         print('CBPCA算法运行时间：', cal_time)
         print('k = ', k, '选取节点集为：', S)
@@ -219,5 +243,5 @@ if __name__ == "__main__":
     import pandas as pd
 
     df_IC_hep = pd.DataFrame(list_IC_hep)
-    df_IC_hep.to_csv('../../data/output/CBPCA/IC_CBPCA(p=0.05,l=2)_email.csv')
+    df_IC_hep.to_csv('../../data/output/CBPCA/IC_CBPCA(p=random,l=2,I=1000)_hep.csv')
     print('文件输出完毕——结束')

@@ -5,6 +5,9 @@ from heapdict import heapdict
 from read_txt_nx import read_Graph
 from time import time
 from preprocessing.generation_propagation_probability import p_fixed,p_random
+from scipy.stats import kendalltau
+import numpy as np
+import csv
 
 def node_core_number(g):
     """
@@ -88,14 +91,7 @@ def get_node_influence(G):
         result[u] = -u_inf
     return result
 
-
-if __name__ == "__main__":
-    start = time()
-    #G = read_Graph("../data/graphdata/phy.txt")
-    G = nx.read_adjlist("../data/graphdata/DBLP.txt",nodetype=int)
-    read_time = time()
-    print('读取网络时间：', read_time - start)
-    p_fixed(G,0.01)
+def save_all_info(G):
     node_inf = get_node_influence(G)
     node_core = node_core_number(G)
     node_degree = get_node_degree(G)
@@ -117,5 +113,41 @@ if __name__ == "__main__":
     import pandas as pd
 
     df_IC_hep = pd.DataFrame(info)
-    df_IC_hep.to_csv('../data/output/DBLP_all_info.csv')
+    df_IC_hep.to_csv('../data/output/facebook_all_info.csv')
     print('文件输出完毕——结束')
+
+
+def kendall(a,b):
+    # L = len(a)
+    # count = 0
+    # for i in range(L - 1):
+    #     for j in range(i + 1, L):
+    #         count = count + np.sign(a[i] - a[j]) * np.sign(b[i] - b[j])
+    #
+    # kendall_tau = count / (L * (L - 1) / 2)
+    kendall_tau_2, p_value = kendalltau(a, b)
+    # print(kendall_tau)
+    print(kendall_tau_2)
+
+def read_csv(file):
+    csvFile = open(file, "r")
+    reader = csv.reader(csvFile)
+    # 建立空字典
+    a = []
+    for item in reader:
+        # 忽略第一行
+        if reader.line_num == 1:
+            continue
+        a.append(int(item[-1]))
+    csvFile.close()
+    print("list:",a)
+    return a
+
+if __name__ == "__main__":
+    #G = read_Graph("../data/graphdata/phy.txt")
+    # G = nx.read_adjlist("../data/graphdata/DBLP.txt",nodetype=int)
+    # 读取csv至字典
+    a = read_csv("../data/output/facebook_all_info.csv")
+    b = read_csv("../data/output/facebook_NI.csv")
+    kendall(a,b)
+

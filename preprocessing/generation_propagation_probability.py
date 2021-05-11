@@ -44,7 +44,7 @@ def p_random(G):
     for edge in G.edges:
         G.edges[edge]['p'] = random.random()
 
-# 用p表示传播概率，随机生成
+# 用p表示传播概率，固定概率
 def p_fixed(G,p):
     """
     :param G: 图
@@ -52,5 +52,18 @@ def p_fixed(G,p):
     :return: 字典，每条边：概率
     """
     for edge in G.edges:
-        G.edges[edge]['weight'] = 1
+        #G.edges[edge]['weight'] = 1
         G.edges[edge]['p'] = p
+
+# 用p表示传播概率，概率为1/in_edge
+def p_inEdge(G):
+    """
+    :param G: 图
+    :return: 字典，每条边：概率
+    """
+    for edge in G.edges:
+        G.edges[edge]['p'] = 1 / G.in_degree(edge[1])
+
+def weight_fixed(G):
+    for edge in G.edges:
+        G.edges[edge]['weight'] = 1

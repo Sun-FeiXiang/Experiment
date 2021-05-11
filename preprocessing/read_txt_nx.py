@@ -11,10 +11,7 @@ def read_Graph(file_name, directed=False):
     :param directed:
     :return:
     """
-    if directed:
-        G = nx.DiGraph()
-    else:
-        G = nx.Graph()
+    G = nx.Graph()
     with open(file_name) as f:
         for line in f:
             if line[0] != '#':
@@ -23,6 +20,10 @@ def read_Graph(file_name, directed=False):
                     G[u][v]['weight'] += 1
                 except:
                     G.add_edge(u, v, weight=1)
+    if directed:
+        G = G.to_directed()
+        # for edge in G.edges:
+        #     G[edge[1]][edge[0]] = G[edge[0]][edge[1]]
     return G
 
 
@@ -46,11 +47,9 @@ def avg_degree2(G):
 
 
 if __name__ == "__main__":
-    # G = read_Graph('../data/graphdata/phy.txt')
+    G = read_Graph('../data/graphdata/hep.txt')
     # print("节点数：",nx.number_of_nodes(G),"边数：",nx.number_of_edges(G),"平均度：",avg_degree(G))
     # from dataPreprocessing.generation_propagation_probability import p_random
     # p_random(G)
     #
-    G1 = nx.read_edgelist("../data/graphdata/jazz.txt", nodetype=int)
-    a, b = avg_degree2(G1)
-    print(a / b ** 2)
+    print(G.edges)

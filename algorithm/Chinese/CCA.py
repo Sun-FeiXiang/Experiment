@@ -115,7 +115,8 @@ def CCA(G, k, d):
 
 if __name__ == "__main__":
     start = time.time()
-    G = nx.read_edgelist("../../data/graphdata/facebook_combined.txt", nodetype=int)  # 其他数据集使用此方式读取
+    G = read_Graph("../../data/graphdata/hep.txt")
+    #G = nx.read_edgelist("../../data/graphdata/facebook_combined.txt", nodetype=int)  # 其他数据集使用此方式读取
     read_time = time.time()
     print('读取网络时间：', read_time - start)
     p = 0.05
@@ -126,7 +127,7 @@ if __name__ == "__main__":
     list_IC_hep = []
     for k in range(1, 51):
         S = algorithm_output[0][:k]
-        cur_spread = IC(G, S, 10000)
+        cur_spread = IC(G, S, 1000)
         cal_time = algorithm_output[1][k - 1]
         print('CCA算法运行时间：', cal_time)
         print('k = ', k, '选取节点集为：', S)
@@ -140,5 +141,5 @@ if __name__ == "__main__":
     import pandas as pd
 
     df_IC_hep = pd.DataFrame(list_IC_hep)
-    df_IC_hep.to_csv('../../data/output/CCA/IC_CCA2(p=0.05,I=1000)_facebook.csv')
+    df_IC_hep.to_csv('../../data/output/CCA/IC_CCA2(p=0.05,I=1000)_hep.csv')
     print('文件输出完毕——结束')

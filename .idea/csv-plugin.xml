@@ -3,7 +3,42 @@
   <component name="CsvFileAttributes">
     <option name="attributeMap">
       <map>
+        <entry key="\data\output\CBPCA\IC_CBPCA(c=0.1,l=2,p=0.01)_facebook_Graph.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\data\output\CCA\IC_CCA2(p=0.01)_email.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\data\output\MCDE\IC_MCDE(p=0.01,alpha=1,beta=1,gamma=1)_email.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
         <entry key="\data\output\degreeDiscount\IC_degreeDiscount(p=0.01)_NetHEPT_Graph.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\data\output\degreeDiscount\IC_degreeDiscount(p=0.01)_email.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\data\output\pageRank\IC_pageRank(p=0.01)_email.csv">
           <value>
             <Attribute>
               <option name="separator" value="," />
