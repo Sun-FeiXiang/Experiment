@@ -15,10 +15,11 @@ from model.ICM_nx import spread_run_IC, IC
 import math
 import networkx as nx
 import sys
-from preprocessing.generation_propagation_probability import p_fixed,fixed_weight,p_random
+from preprocessing.generation_propagation_probability import p_fixed, fixed_weight, p_random, p_inEdge
 from time import time
 from preprocessing.read_txt_nx import read_Graph
 import pandas as pd
+
 
 def edge_truss_number(G):
     """
@@ -78,7 +79,7 @@ def get_node_core_number(g, node_degree):
 #             g.remove_node(node)
 #     return g
 
-def edge_cover(G, node, edge_truss_number, c, l):
+def edge_cover(G, node, edge_truss_number,l=2):
     """
     层次遍历，优先选择truss值大的边进行覆盖
     :param G:
@@ -90,10 +91,13 @@ def edge_cover(G, node, edge_truss_number, c, l):
     q = [node]
     cover_list = []
     level = 0
-    c = random.random()
+    c = 0.5
     while len(q) > 0 and level < l:
         u = q.pop(0)
         u_neighbors = list(G.neighbors(u))
+        if len(u_neighbors) == 0:
+            continue
+        # c = 1 / len(u_neighbors)  # c默认设置为入度分之一
         cover_num = round(c * len(u_neighbors))  # 覆盖个数等于覆盖概率乘以邻居个数 四舍五入取整
         adj_truss_number = dict()  # 邻边的truss值
         for v in u_neighbors:
@@ -164,12 +168,10 @@ def get_node_degree(G):
     return d
 
 
-def CBPCA(G, k, c, l):
+def CBPCA(G, k):
     """
     :param G: networkx图对象
     :param k: 种子集合的大小
-    :param c: 每层覆盖率
-    :param l: 覆盖层次
     :return:
     """
     start_time = timer()
@@ -187,12 +189,13 @@ def CBPCA(G, k, c, l):
         S.append(u)
         timelapse.append(timer() - start_time)
         cur_cover_list = [u]
-        cur_cover_list.extend(edge_cover(G, u, edge_truss_num, c, l))  # 当前节点覆盖的节点集
+        cur_cover_list.extend(edge_cover(G, u, edge_truss_num))  # 当前节点覆盖的节点集
         S_cover.extend(cur_cover_list)
         for cover_one in cur_cover_list:  # 弹出这些节点
             if cover_one in pn.keys():
                 pn.pop(cover_one)
     return (S, timelapse)
+
 
 def cal_node_NI(G):
     node_degree = get_node_degree(G)  # 节点的度
@@ -204,7 +207,7 @@ def cal_node_NI(G):
         ni[u] = -math.sqrt(node_degree[u] ** 2 + node_h[u] ** 2) * node_E[u]
     info = []
     for _ in range(len(G.nodes)):
-        u,u_ni = ni.popitem()
+        u, u_ni = ni.popitem()
         info.append({
             'u': u,
             'NI': -u_ni
@@ -216,16 +219,18 @@ def cal_node_NI(G):
 
 if __name__ == "__main__":
     start = time()
-    G = read_Graph("../../data/graphdata/hep.txt")
-    # G = nx.read_edgelist("../../data/graphdata/facebook_combined.txt", nodetype=int)  # 其他数据集使用此方式读取
-    #fixed_weight(G)
-    #cal_node_NI(G)
+    G = read_Graph("../../data/graphdata/phy.txt")
+    # G = nx.read_edgelist("../../data/graphdata/email.txt", nodetype=int,create_using=nx.DiGraph)  # 其他数据集使用此方式读取
+    # fixed_weight(G)
+    # cal_node_NI(G)
     read_time = time()
     print('读取网络时间：', read_time - start)
-    p = 0.05
-    p_random(G)
-    algorithm_output = CBPCA(G, 50, p * 10, 2)
+    # p_inEdge(G)
+    p=0.05
+    p_fixed(G,p)
+    algorithm_output = CBPCA(G, 50)
     list_IC_hep = []
+    print("p=0.05,I=1000,data=phy,Graph")
     for k in range(1, 51):
         S = algorithm_output[0][:k]
         cur_spread = IC(G, S, 1000)
@@ -243,5 +248,5 @@ if __name__ == "__main__":
     import pandas as pd
 
     df_IC_hep = pd.DataFrame(list_IC_hep)
-    df_IC_hep.to_csv('../../data/output/CBPCA/IC_CBPCA(p=random,l=2,I=1000)_hep.csv')
+    df_IC_hep.to_csv('../../data/output/CBPCA/IC_CBPCA(p=0.05,l=2,I=1000)_phy.csv')
     print('文件输出完毕——结束')

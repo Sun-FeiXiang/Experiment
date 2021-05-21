@@ -1,8 +1,9 @@
-from diffusion.Networkx_diffusion import spread_run_IC
+from model.ICM_nx import spread_run_IC
 from heapdict import heapdict
 from igraph import *
 from timeit import default_timer as timer
-
+import time
+from preprocessing.read_txt_nx import read_Graph
 
 class Node(object):
     def __init__(self, node):
@@ -89,11 +90,7 @@ def test_igraph():
 
 
 if __name__ == "__main__":
-    import time
-
     start = time.time()
-    from dataPreprocessing.read_txt_nx import read_Graph
-
     G = read_Graph("../../data/graphdata/hep.txt")
     read_time = time.time()
     print('读取网络时间：', read_time - start)

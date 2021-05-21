@@ -5,7 +5,7 @@ from igraph import *
 from collections import Counter
 from scipy.special import comb
 from tqdm import tqdm
-from diffusion.igraph_diffusion import IC
+from model.igraph_diffusion import IC
 
 def get_RRS(G, p, l):  # 获取一个反向可达集
     source = np.random.randint(0, l)  # 随机选点ID
@@ -81,7 +81,7 @@ def get_mc(G, k, p, l, Rtemp):  # 求对于网络G，IC模型下，在传播概�
 
 if __name__ == '__main__':
     open('../data/graphdata/NetHEPT.txt').read()
-    G = Graph.Read_Edgelist('../data/NetHEPT.txt', directed=True)
+    G = Graph.Read_Edgelist('../data/NetHEPT.txt', directed=False)
     L = len(G.vs)
 
     MC = []

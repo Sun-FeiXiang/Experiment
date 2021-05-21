@@ -4,23 +4,20 @@ Core-based edge covering algorithm
 覆盖系数 c:(0,1)
 优先选择pn=sqrt(d**2+k_s**2)大的节点
 然后利用k-truss，计算边的truss值
-选择pn值大的点，覆盖周围truss值大的边，并标记相应的点，更新周围pn值
-
+选择pn值大的点，覆盖周围truss值大的边，并标记相应的点
 """
-import random
-
 from heapdict import heapdict
 from timeit import default_timer as timer
 from model.ICM_nx import spread_run_IC, IC
 import math
 import networkx as nx
-import sys
-from preprocessing.generation_propagation_probability import p_fixed,fixed_weight,p_random
+from preprocessing.generation_propagation_probability import p_fixed, fixed_weight, p_random, p_inEdge,p_fixed_with_link
 from time import time
 from preprocessing.read_txt_nx import read_Graph
 import pandas as pd
 
-def edge_truss_number(G):
+
+def get_edge_truss_number(G):
     """
     有修改的，求边的truss值
     :param G:
@@ -62,38 +59,30 @@ def get_node_core_number(g, node_degree):
             node_degree = get_node_degree(G)
             if not len(node_degree):
                 return k_nodes
-            # print(sorted(node_degree.items(),key=lambda x: x[1]))
             if min(node_degree.items(), key=lambda x: x[1])[1] > level:
                 break
-
         level = min(node_degree.items(), key=lambda x: x[1])[1]
     return k_nodes
 
 
-# def k_core_subGraph(G, k):
-#     node_core_num = get_node_core_number(G)
-#     g = G.copy()
-#     for node, core_num in node_core_num.items():
-#         if core_num == k:
-#             g.remove_node(node)
-#     return g
-
-def edge_cover(G, node, edge_truss_number, c):
+def path_cover(G, node, edge_truss_number, c):
     """
     层次遍历，优先选择truss值大的边进行覆盖
     :param G:
-    :param node:
-    :param edge_truss_number:
-    :param c:
+    :param node:节点
+    :param edge_truss_number:边的turss值
+    :param c: 每层的覆盖率
     :return: 覆盖到的点集
     """
     q = [node]
-    node_neighbors_num = len(G.neighbors(node))#节点的邻居个数设置为该节点的覆盖大小
+    node_neighbors_num = len(list(G.neighbors(node)))  # 节点的邻居个数设置为该节点的覆盖大小
     cover_list = []
-    level = 0
     while len(q) > 0 and len(cover_list) < node_neighbors_num:
         u = q.pop(0)
         u_neighbors = list(G.neighbors(u))
+        if len(u_neighbors) == 0:  # 如果该点没有邻居则继续
+            continue
+        # c = 1 / len(u_neighbors)  # c默认设置为入度分之一
         cover_num = round(c * len(u_neighbors))  # 覆盖个数等于覆盖概率乘以邻居个数 四舍五入取整
         adj_truss_number = dict()  # 邻边的truss值
         for v in u_neighbors:
@@ -102,13 +91,15 @@ def edge_cover(G, node, edge_truss_number, c):
         for i in range(cover_num):
             cover_list.append(adj_truss_number[i][0][1])
         q.extend(cover_list)
-        level = level + 1
     return cover_list
 
 
 def get_node_h(G, node_degree):
     """
     计算节点的H指数，时间复杂度O(nd)
+    :param G:
+    :param node_degree:
+    :return:
     """
     node_h = dict()
     for u in G.nodes:
@@ -128,8 +119,13 @@ def get_node_h(G, node_degree):
 
 
 def get_node_E(G, node_core):
+    """
+    根据节点核心值获取节点的信息熵
+    :param G:
+    :param node_core:
+    :return:
+    """
     node_E = dict()
-    # E_min = sys.maxsize
     for node in G.nodes:
         cur_E = 0
         neighbors = list(G.neighbors(node))
@@ -141,14 +137,9 @@ def get_node_E(G, node_core):
             else:
                 neighbors_core[cur_node_core] = 1
         for core, num in neighbors_core.items():
-            p_i = num / len(neighbors)  # 核心值为
-            cur_E = cur_E - p_i * math.log2(p_i)
-        # if cur_E_i < E_min:
-        #     E_min = cur_E_i
+            p_i = num / len(neighbors)
+            cur_E = cur_E - p_i * math.log(p_i, math.e)
         node_E[node] = cur_E
-    # E_i_p = dict()  # 归一化后的信息熵
-    # for node, node_E_i in E_i.items():
-    #     E_i_p[node] = (E_i[node] - E_min) / (math.log2(max_core_num) - E_min)
     return node_E
 
 
@@ -164,42 +155,15 @@ def get_node_degree(G):
     return d
 
 
-
-def mark_overlay(G, node, CO_v, d):
-    """
-    使用bfs覆盖
-    :param G: networkx对象
-    :param node: 开始节点
-    :param d: 度
-    :param CO_v:访问标识
-    :return: 覆盖的节点集
-    """
-    cover_nodes = [node]
-    q = []  # 队列
-    q.append(node)
-    CO_v[node] = True
-    level = 0  # 覆盖第几层
-    while len(q) > 0 and level < d:
-        v = q.pop(0)  # 弹出第一个节点
-        G_adj = G.adj[v]
-        for key, value in G_adj.items():
-            if not CO_v[key]:
-                CO_v[key] = True
-                cover_nodes.append(key)
-                q.append(key)
-        level = level + 1  # 访问一层
-    return cover_nodes
-
-def CBPCA(G, k, c, l):
+def CBPCA(G, k, c):
     """
     :param G: networkx图对象
     :param k: 种子集合的大小
     :param c: 每层覆盖率
-    :param l: 覆盖层次
     :return:
     """
     start_time = timer()
-    edge_truss_num = edge_truss_number(G)  # 边的truss值
+    edge_truss_num = get_edge_truss_number(G)  # 边的truss值
     node_degree = get_node_degree(G)  # 节点的度
     node_h = get_node_h(G, node_degree)  # 节点的H指数
     node_core = get_node_core_number(G, node_degree)  # 节点的核心值
@@ -213,29 +177,32 @@ def CBPCA(G, k, c, l):
         S.append(u)
         timelapse.append(timer() - start_time)
         cur_cover_list = [u]
-        cur_cover_list.extend(edge_cover(G, u, edge_truss_num, c, l))  # 当前节点覆盖的节点集
+        cur_cover_list.extend(path_cover(G, u, edge_truss_num, c))  # 当前节点覆盖的节点集
         S_cover.extend(cur_cover_list)
         for cover_one in cur_cover_list:  # 弹出这些节点
-            if cover_one in pn.keys():
+            if cover_one in pn.keys():  # 只需要弹出新加入的
                 pn.pop(cover_one)
     return (S, timelapse)
 
 
 if __name__ == "__main__":
     start = time()
-    G = read_Graph("../../data/graphdata/hep.txt")
-    # G = nx.read_edgelist("../../data/graphdata/email.txt", nodetype=int)  # 其他数据集使用此方式读取
-    # fixed_weight(G)
-    #cal_node_NI(G)
+    # G = read_Graph("../../data/graphdata/phy.txt",directed=True)
+    G = nx.read_edgelist("../../data/graphdata/PGP.txt", nodetype=int,create_using=nx.Graph)  # 其他数据集使用此方式读取
+    fixed_weight(G)
     read_time = time()
     print('读取网络时间：', read_time - start)
-    p = 0.01
-    p_fixed(G,p)
-    algorithm_output = CBPCA(G, 50, p * 10, 2)
+    p = 0.05
+    I = 1000
+    p_fixed_with_link(G,p)
+    # p_fixed(G, p)
+    # p_inEdge(G)
+    algorithm_output = CBPCA(G, 50, p * 10)
     list_IC_hep = []
+    print("p=", p, "R,I=", I, ",data=PGP,Graph")
     for k in range(1, 51):
         S = algorithm_output[0][:k]
-        cur_spread = IC(G, S, 1000)
+        cur_spread = IC(G, S, I)
         cal_time = algorithm_output[1][k - 1]
         print('CBPCA算法运行时间：', cal_time)
         print('k = ', k, '选取节点集为：', S)
@@ -246,9 +213,6 @@ if __name__ == "__main__":
             'average cover size': cur_spread,
             'S': S
         })
-        temp_time = timer()  # 记录当前时间
-    # import pandas as pd
-    #
-    # df_IC_hep = pd.DataFrame(list_IC_hep)
-    # df_IC_hep.to_csv('../../data/output/CBPCA/IC_CBPCA(p=random,l=2,I=1000)_hep.csv')
-    # print('文件输出完毕——结束')
+    df_IC_hep = pd.DataFrame(list_IC_hep)
+    df_IC_hep.to_csv('../../data/output/CBPCA/IC_CBPCA(p=0.05R,I=1000)_PGP_Graph.csv')
+    print('文件输出完毕——结束')

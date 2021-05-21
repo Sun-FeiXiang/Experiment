@@ -1,6 +1,9 @@
 # 生成传播概率
 import random
 # 返回固定传播概率
+import networkx as nx
+
+
 def fixed_probability(G, p):
     """
     :param G: 图
@@ -55,6 +58,22 @@ def p_fixed(G,p):
         #G.edges[edge]['weight'] = 1
         G.edges[edge]['p'] = p
 
+
+def p_fixed_with_link(G,p):
+    """
+    使用边的p属性表示传播概率，且在固定概率上加入传播联系
+    :param G:
+    :param p:
+    :return:
+    """
+    for edge in G.edges:
+        start = edge[0]
+        end = edge[1]
+        start_adj = list(G.adj[start].keys())
+        end_adj = list(G.adj[end].keys())
+        intersection = [i for i in start_adj if i in end_adj]  # O(k^2)
+        G.edges[edge]['p'] = p + len(intersection)/(len(start_adj)+len(end_adj))
+
 # 用p表示传播概率，概率为1/in_edge
 def p_inEdge(G):
     """
@@ -64,6 +83,6 @@ def p_inEdge(G):
     for edge in G.edges:
         G.edges[edge]['p'] = 1 / G.in_degree(edge[1])
 
-def weight_fixed(G):
+def fixed_weight(G):
     for edge in G.edges:
         G.edges[edge]['weight'] = 1

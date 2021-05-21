@@ -1,7 +1,7 @@
 from model.ICM_nx import spread_run_IC,IC
 import time
 from preprocessing.read_txt_nx import read_Graph
-from preprocessing.generation_propagation_probability import p_fixed,p_random
+from preprocessing.generation_propagation_probability import p_fixed,p_random,p_inEdge,fixed_weight,p_fixed_with_link
 import networkx as nx
 
 
@@ -115,16 +115,19 @@ def CCA(G, k, d):
 
 if __name__ == "__main__":
     start = time.time()
-    G = read_Graph("../../data/graphdata/hep.txt")
-    #G = nx.read_edgelist("../../data/graphdata/facebook_combined.txt", nodetype=int)  # 其他数据集使用此方式读取
+    # G = read_Graph("../../data/graphdata/phy.txt")
+    G = nx.read_edgelist("../../data/graphdata/email.txt", nodetype=int,create_using=nx.Graph)  # 其他数据集使用此方式读取
+    fixed_weight(G)
     read_time = time.time()
     print('读取网络时间：', read_time - start)
-    p = 0.05
-    p_fixed(G,p)
+    p = 0.04
+    p_fixed_with_link(G,p)
+    # p_fixed(G,p)
+    # p_inEdge(G)
     d = 2
     algorithm_output = CCA(G, 50, d)
-
     list_IC_hep = []
+    print("p=0.05R,I=1000,data=email,Graph")
     for k in range(1, 51):
         S = algorithm_output[0][:k]
         cur_spread = IC(G, S, 1000)
@@ -141,5 +144,5 @@ if __name__ == "__main__":
     import pandas as pd
 
     df_IC_hep = pd.DataFrame(list_IC_hep)
-    df_IC_hep.to_csv('../../data/output/CCA/IC_CCA2(p=0.05,I=1000)_hep.csv')
+    df_IC_hep.to_csv('../../data/output/CCA/IC_CCA2(p=0.05R,I=1000)_email.csv')
     print('文件输出完毕——结束')

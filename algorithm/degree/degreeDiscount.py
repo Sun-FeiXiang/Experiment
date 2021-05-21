@@ -2,11 +2,14 @@
 独立级联模型下，度折扣算法 degree discount heuristic [1]
 [1] -- Wei Chen et al. Efficient influence maximization in Social Networks (algorithm 4)
 """
-from model.ICM_nx import spread_run_IC,IC
+from model.ICM_nx import spread_run_IC, IC
 from algorithm.priorityQueue import PriorityQueue as PQ  # priority queue
 from timeit import default_timer as timer
-from preprocessing.generation_propagation_probability import p_fixed,p_random,p_inEdge,weight_fixed
+from preprocessing.generation_propagation_probability import p_fixed, p_random, p_inEdge, fixed_weight, \
+    p_fixed_with_link
 import networkx as nx
+import time
+from preprocessing.read_txt_nx import read_Graph
 
 
 def degreeDiscountIC(G, k):
@@ -26,7 +29,7 @@ def degreeDiscountIC(G, k):
     # 初始度折扣
     for u in G.nodes():
         d[u] = sum([G[u][v]['weight'] for v in G[u]])
-        #d[u] = len(G[u]) # each neighbor adds degree 1
+        # d[u] = len(G[u]) # each neighbor adds degree 1
         dd.add_task(u, -d[u])  # 添加每个节点的度数
         t[u] = 0
 
@@ -38,7 +41,7 @@ def degreeDiscountIC(G, k):
         for v in G[u]:  # G[u]是u的邻接表
             if v not in S:  # ！！！
                 t[v] += G[u][v]['weight']
-                #t[v] += 1
+                # t[v] += 1
                 priority = d[v] - 2 * t[v] - (d[v] - t[v]) * t[v] * G[u][v]['p']
                 dd.add_task(v, -priority)
     return (S, timelapse)
@@ -57,7 +60,7 @@ def degreeDiscountIC2(G, k, p=.01):
     d = dict()
     dd = dict()  # 度折扣
     t = dict()  # 选择邻居的个数
-    S,timelapse, start_time = [], [], timer()
+    S, timelapse, start_time = [], [], timer()
     for u in G:
         d[u] = sum([G[u][v]['weight'] for v in G[u]])  # 每条边增加的度 一般是1，也有两个点之间有多条边
         # d[u] = len(G[u]) # each neighbor adds degree 1
@@ -99,23 +102,23 @@ def degreeDiscountStar(G, k, p=.01):
 
 
 if __name__ == "__main__":
-    import time
     start = time.time()
-    from preprocessing.read_txt_nx import read_Graph
-    G = read_Graph('../../data/graphdata/hep.txt',directed=True)#读取为有向图
-    #G = nx.read_edgelist("../../data/graphdata/facebook_combined.txt", nodetype=int)  # 其他数据集使用此方式读取
-    #weight_fixed(G)#设置默认权重为1
+    # G = read_Graph('../../data/graphdata/phy.txt',directed=True)#读取为有向图
+    G = nx.read_edgelist("../../data/graphdata/PGP.txt", nodetype=int, create_using=nx.Graph)  # 其他数据集使用此方式读取
+    fixed_weight(G)  # 设置默认权重为1
     read_time = time.time()
     print('读取网络时间：', read_time - start)
-    p = 0.01
+    p = 0.05
+    I = 1000
+    p_fixed_with_link(G, p)
     # p_fixed(G,p)
-    p_inEdge(G)
+    # p_inEdge(G)
     output = degreeDiscountIC(G, 50)
     list_IC_hep = []
-    print("p=1/inEdge,I=10000,data=hep,DiGraph")
+    print("p=", p, "R,I=", I, ",data=PGP,Graph")
     for k in range(1, 51):
         S = output[0][:k]
-        cur_spread = IC(G, S,10000)
+        cur_spread = IC(G, S, 1000)
         cal_time = output[1][k - 1]
         print('degreeDiscount算法运行时间：', cal_time)
         print('k = ', k, '选取节点集为：', S)
@@ -126,9 +129,8 @@ if __name__ == "__main__":
             'average cover size': cur_spread,
             'S': S
         })
-        temp_time = timer()  # 记录当前时间
     import pandas as pd
 
     df_IC_hep = pd.DataFrame(list_IC_hep)
-    df_IC_hep.to_csv('../../data/output/degreeDiscount/IC_degreeDiscount(p=1/inEdge)_hep_DiGraph.csv')
+    df_IC_hep.to_csv('../../data/output/degreeDiscount/IC_degreeDiscount(p=0.05R,I=1000)_PGP_Graph.csv')
     print('文件输出完毕——结束')

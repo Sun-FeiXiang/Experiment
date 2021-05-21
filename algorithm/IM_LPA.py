@@ -6,9 +6,14 @@
 import collections
 import copy
 
+import networkx as nx
 
 from algorithm.priorityQueue import PriorityQueue as PQ
 import numpy as np
+from preprocessing.generation_propagation_probability import p_fixed,p_random,p_fixed_with_link,p_inEdge,fixed_weight
+from preprocessing.read_txt_nx import read_Graph
+from model.ICM_nx import spread_run_IC,IC
+import pandas as pd
 
 def nodeDegree(G):
     D = {}
@@ -36,7 +41,7 @@ def Seeding(G):
         for v in G[u]:
             if v in W:
                 W.remove(v)
-    print(S)
+    print("S" + str(S))
     return S
 
 def getMostNeighborLabel(G, v, LP):
@@ -88,6 +93,9 @@ def Label_propagation(G, S):
         for v in V_plu:
             mostLabels = getMostNeighborLabel(G,v, LP)
 
+            if mostLabels == -1:
+                continue
+
             for label in mostLabels:
                 if label not in LP[v]:
                     LP[v].append(label)
@@ -105,29 +113,25 @@ def Finding(G, k, C):
         S.append(key)
         if (len(S) >= k):
             break
-
     return S
 
-
-
 if __name__ == "__main__":
-
-    from dataPreprocessing.read_txt_nx import read_Graph
-
-    G = read_Graph("../data/graphdata/celegans.txt")
+    # G = read_Graph("../data/graphdata/arenas-pgp.edges.txt",directed=False)
+    G = nx.read_edgelist("../data/graphdata/email.txt", nodetype=int,create_using=nx.Graph)  # 其他数据集使用此方式读取
+    fixed_weight(G)
     S = Seeding(G)
     C = Label_propagation(G, S)
-    output = Finding(G, 90, C)
-    print(S)
-    from diffusion.Networkx_diffusion import spread_run_IC
-    #average_cover_size = spread_run_IC(G, S, 0.05, 1000)
-    #print(average_cover_size)
-
-
+    output = Finding(G, 51, C)
+    print("种子集合：",S)
+    I = 1000
+    p = 0.05
+    p_fixed_with_link(G,p)
+    print("p=",p,",R,I=",I,"data=email,Graph")
     list_IC_hep = []
-    for k in range(1, 30):
+    for k in range(1, 51):
         S = output[:k]
-        cur_spread = spread_run_IC(G, S, 0.25, 1000)
+        cur_spread = IC(G, S, I)
+        sum_nodes = float(len(G.nodes))
         print('k = ', k, '选取节点集为：', S)
         print('k=', k, '平均覆盖大小：', cur_spread)
         list_IC_hep.append({
@@ -135,8 +139,6 @@ if __name__ == "__main__":
             'average cover size': cur_spread,
             'S': S
         })
-    import pandas as pd
-
     df_IC_hep = pd.DataFrame(list_IC_hep)
-    df_IC_hep.to_csv('../data/output/IMLPA/IC_node=16_(p=0.25)_celegans_10000_Graph.csv')
-    # print('文件输出完毕——结束')
+    df_IC_hep.to_csv('../data/output/IMLPA/IC_LPA_(p=0.05R,I=1000)_email_Graph.csv')
+    print('文件输出完毕——结束')

@@ -1,25 +1,27 @@
 """
-
+算法：基于独立级联模型的degree heuristic
+    获取拥有最大度的前k个节点
+来源：Wei Chen et al. Efficient influence maximization in Social Networks
 """
 import collections
 import copy
+
+
 from algorithm.priorityQueue import PriorityQueue as PQ
 import numpy as np
-from preprocessing.read_txt_nx import read_Graph
-from model.ICM_nx import spread_run_IC,IC
 
 def eh_index(G):
     EH = {}
     H = {}
     for v in G:
         h_index = G.degree(v)
-        for h in range(0, h_index + 1):
+        for h in range(0, h_index+1):
             ch = 0
             for u in G[v]:
                 if h <= G.degree(u):
-                    ch = ch + 1
+                    ch = ch+1
             if ch < h:
-                h_index = h - 1
+                h_index = h -1
                 break
         H[v] = h_index
     for v in G:
@@ -27,7 +29,6 @@ def eh_index(G):
         for u in G[v]:
             EH[v] = EH[v] + H[u]
     return EH
-
 
 def Seeding(G):
     W = []
@@ -40,7 +41,7 @@ def Seeding(G):
     for v in G:
         EH_PQ.add_task(v, -EH[v])
 
-    while (len(W) != 0):
+    while(len(W) != 0):
         u, priority = EH_PQ.pop_item()
         if u not in W:
             continue
@@ -51,7 +52,6 @@ def Seeding(G):
                 W.remove(v)
     print(S)
     return S
-
 
 def getMostNeighborLabel(G, v, LP):
     adjLabels = collections.defaultdict(int)
@@ -64,9 +64,9 @@ def getMostNeighborLabel(G, v, LP):
             flag = 1
     if flag == 0:
         return -1
+    #print("adjLabels" + str(adjLabels))
     maxAdjLabels = max(adjLabels.values())
     return [i[0] for i in adjLabels.items() if i[1] == maxAdjLabels]
-
 
 def getCommunity(G, LP):
     Com_num = 0
@@ -78,17 +78,17 @@ def getCommunity(G, LP):
             if label in Com_union:
                 Com_union[label].append(v)
             else:
-                Com_num = Com_num + 1
+                Com_num = Com_num+1
                 Com_union[label] = [v]
 
     print(Com_union)
     return Com_union
 
-
 def Label_propagation(G, S):
+    print("Label_propagation....")
     LP = {}
     V = []
-    # 用节点号代替标签号 独一无二
+    #用节点号代替标签号 独一无二
     for v in G:
         LP[v] = [-1]
         V.append(v)
@@ -97,13 +97,17 @@ def Label_propagation(G, S):
         LP[u].append(u)
 
     flag = 1
-    while flag == 1:
+    while(flag == 1):
         flag = 0
         V_plu = np.random.permutation(V)
-        # print(V_plu)
+        #print(V_plu)
         for v in V_plu:
-            mostLabels = getMostNeighborLabel(G, v, LP)
+            mostLabels = getMostNeighborLabel(G,v, LP)
 
+            if mostLabels == -1:
+                continue
+
+            #print("mostLabels" + str(mostLabels))
             for label in mostLabels:
                 if label not in LP[v]:
                     LP[v].append(label)
@@ -112,26 +116,24 @@ def Label_propagation(G, S):
     C = getCommunity(G, LP)
     return C
 
-
 def Com_edge(G, C, i, j):
     Sum_edge = 0
     for v in C[i]:
         for u in G[v]:
             if u in C[j] and u not in C[i]:
-                Sum_edge = Sum_edge + 1
+                Sum_edge = Sum_edge +1
     return Sum_edge
-
 
 def modularity(g, community_list):
     # ls, ds variables
     intra_degree = {i: 0 for i in range(0, len(community_list))}  # ds
-    intra_edges = {i: 0 for i in range(0, len(community_list))}  # ls
+    intra_edges = {i: 0 for i in range(0, len(community_list))}   # ls
 
     # calculate ds, time complexity: O(V)
     community_index = 0
     community_id = {}
 
-    for key, community in community_list.items():
+    for key,community in community_list.items():
         tmp_index = copy.copy(community_index)
         for v in community:
             intra_degree[tmp_index] += g.degree(v)
@@ -158,11 +160,13 @@ def modularity(g, community_list):
     return q
 
 
+
 def Merge_Community(G, C):
+    print("Merge....")
     n = len(G)
-    R = np.zeros((n + 1, n + 1))
+    R = np.zeros((n+1,n+1))
     flag = 1
-    while (flag):
+    while(flag):
         for i in C:
             for j in C:
                 if i == j:
@@ -170,17 +174,17 @@ def Merge_Community(G, C):
                 else:
                     x = Com_edge(G, C, i, j)
                     y = min(len(C[i]), len(C[j]))
-                    R[i][j] = x * 1.0 / y
+                    R[i][j] = x*1.0/y
         new_C = copy.deepcopy(C)
         maxi = 0
         maxj = 0
         maxR = 0
         for i in C:
             for j in C:
-                if i == j:
+                if i==j:
                     continue
                 if R[i][j] > maxR:
-                    max = R[i][j]
+                    max =  R[i][j]
                     maxi = i
                     maxj = j
         for v in new_C[maxj]:
@@ -195,10 +199,13 @@ def Merge_Community(G, C):
         else:
             flag = 0
 
+
     return C
 
 
+
 def Finding(G, k, C):
+    print("Finding....")
     C = sorted(C.items(), key=lambda item: len(item[1]), reverse=True)
     print(C)
     S = []
@@ -210,20 +217,24 @@ def Finding(G, k, C):
     return S
 
 
+
 if __name__ == "__main__":
+
+    from dataPreprocessing.read_txt_nx import read_Graph
 
     G = read_Graph("../data/graphdata/hep.txt")
     S = Seeding(G)
     C = Label_propagation(G, S)
-    C = Merge_Community(G, C)
-    output = Finding(G, 50, C)
+    C = Merge_Community(G,C)
+    output = Finding(G, 90, C)
     print(S)
+    from diffusion.Networkx_diffusion import spread_run_IC
+    #average_cover_size = spread_run_IC(G, S, 0.05, 1000)
+    #print(average_cover_size)
 
-    # average_cover_size = spread_run_IC(G, S, 0.05, 1000)
-    # print(average_cover_size)
 
     list_IC_hep = []
-    for k in range(1, 51):
+    for k in range(1, 50):
         S = output[:k]
         cur_spread = spread_run_IC(G, S, 0.01, 1000)
         print('k = ', k, '选取节点集为：', S)
@@ -233,8 +244,8 @@ if __name__ == "__main__":
             'average cover size': cur_spread,
             'S': S
         })
-    # import pandas as pd
-    #
-    # df_IC_hep = pd.DataFrame(list_IC_hep)
-    # df_IC_hep.to_csv('../data/output/IMELPR/IC_node=90(p=0.25)_celegans_10000_Graph.csv')
+    import pandas as pd
+
+    df_IC_hep = pd.DataFrame(list_IC_hep)
+    df_IC_hep.to_csv('../data/output/IMELPR/IC_node=50(p=0.01)_hep_Graph.csv')
     # print('文件输出完毕——结束')

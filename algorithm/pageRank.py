@@ -1,7 +1,7 @@
 import networkx as nx
 from model.ICM_nx import spread_run_IC,IC
 from preprocessing.read_txt_nx import read_Graph
-from preprocessing.generation_propagation_probability import p_fixed,p_random
+from preprocessing.generation_propagation_probability import p_fixed,p_random,fixed_weight,p_inEdge
 from time import time
 """
 PageRank作为一个经典的网页排序算法，在影响最大化中的应用，一般作为一个对照实验。本处的实现主要依据下面论文中的设置
@@ -25,14 +25,16 @@ def pageRank(G, k):
 
 if __name__ == "__main__":
     start = time()
-    #G = read_Graph("../data/graphdata/phy.txt")
-    G = nx.read_edgelist("../data/graphdata/email.txt", nodetype=int)  # 其他数据集使用此方式读取
+    G = read_Graph("../data/graphdata/hep.txt")
+    # G = nx.read_edgelist("../data/graphdata/email.txt", nodetype=int,create_using=nx.DiGraph)  # 其他数据集使用此方式读取
+    # fixed_weight(G)
     read_time = time()
     print('读取网络时间：', read_time - start)
-    p = 0.05
+    p = 0.03
     p_fixed(G,p)
+    # p_inEdge(G)
     algorithm_output = pageRank(G, 50)
-
+    print("p=0.03,I=1000,data=hep,Graph")
     list_IC_hep = []
     for k in range(1, 51):
         S = algorithm_output[0][:k]
@@ -50,5 +52,5 @@ if __name__ == "__main__":
     import pandas as pd
 
     df_IC_random_hep = pd.DataFrame(list_IC_hep)
-    df_IC_random_hep.to_csv('../data/output/pageRank/IC_pageRank(p=0.05)_email.csv')
+    df_IC_random_hep.to_csv('../data/output/pageRank/IC_pageRank(p=0.03,I=1000)_hep.csv')
     print('文件输出完毕——结束')
