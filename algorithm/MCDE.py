@@ -108,22 +108,23 @@ def Embeddeness(G, A, B):
 
 if __name__ == "__main__":
     start = time.time()
-    #G = read_Graph("../data/graphdata/phy.txt")  # 针对hep和phy数据集使用该函数读取网络
-    G = nx.read_edgelist("../data/graphdata/email.txt",nodetype=int,create_using=nx.Graph) #其他数据集使用此方式读取
-    fixed_weight(G)
+    G = read_Graph("../data/graphdata/hep.txt")  # 针对hep和phy数据集使用该函数读取网络
+    # G = nx.read_edgelist("../data/graphdata/facebook_combined.txt",nodetype=int,create_using=nx.Graph) #其他数据集使用此方式读取
+    # fixed_weight(G)
     read_time = time.time()
     print('读取网络时间：', read_time - start)
     p = 0.05
+    I = 1000
     # p_fixed(G, p)
     p_fixed_with_link(G,p)
     theta = avg_degree(G)  # 平均度,设置了weight之后都用这个
     node_threshold = random_threshold(G)  # 节点设置阈值为（0，1）的随机数
     algorithm_output = MCDE(G, 50, theta, node_threshold, 1, 1, 1)
     list_IC_hep = []
-    print("p=0.05R,I=1000,data=email,Graph")
+    print("p=",p,"R,I=",I,",data=hep,Graph")
     for k in range(1, 51):
         S = algorithm_output[0][:k]
-        cur_spread = IC(G, S, 1000)
+        cur_spread = IC(G, S, I)
         cal_time = algorithm_output[1][k - 1]
         print('MCDE算法运行时间：', cal_time)
         print('k = ', k, '选取节点集为：', S)
@@ -138,5 +139,5 @@ if __name__ == "__main__":
     import pandas as pd
 
     df_IC_hep = pd.DataFrame(list_IC_hep)
-    df_IC_hep.to_csv('../data/output/MCDE/IC_MCDE(p=0.05R,I=1000)_email_Graph.csv')
+    df_IC_hep.to_csv('../data/output/MCDE/IC_MCDE(p=0.05R,I=1000)_hep_Graph.csv')
     print('文件输出完毕——结束')
