@@ -1,5 +1,5 @@
 
-from CBPCA import CBPCA
+from CBPCA2 import CBPCA
 from diffusion.Networkx_diffusion import spread_run_IC
 
 if __name__=="__main__":

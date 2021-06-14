@@ -5,7 +5,6 @@ weight是传播概率
 import numpy as np
 from copy import deepcopy
 from random import random
-import random
 
 def runIC(G, S, p=.01):
     """
@@ -88,7 +87,7 @@ def IC(G, S, mc=10000):
             for v in G[T[i]]:
                 if v not in T:
                     w = G[T[i]][v]['weight']  # 两个节点间边的数目
-                    if random.random() <= 1 - (1 - G[T[i]][v]['p']) ** w:  # 如果至少一条边被影响G[T[i]][v]['p']: #
+                    if random() <= 1 - (1 - G[T[i]][v]['p']) ** w:  # 如果至少一条边被影响G[T[i]][v]['p']: #
                         T.append(v)
             i += 1
         spread.append(len(T))

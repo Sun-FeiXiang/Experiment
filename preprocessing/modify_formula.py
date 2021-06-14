@@ -1,6 +1,6 @@
 import pandas as pd
 from dataPreprocessing.read_txt_nx import read_Graph
-from algorithm.test.CBPCA import get_E_i,node_core_number,get_node_degree,get_node_h
+from algorithm.test.CBPCA2 import get_E_i,node_core_number,get_node_degree,get_node_h
 import math
 from algorithm.MCDE import get_node_entropy
 from heapdict import heapdict

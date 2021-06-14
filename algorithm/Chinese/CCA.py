@@ -115,20 +115,20 @@ def CCA(G, k, d):
 
 if __name__ == "__main__":
     start = time.time()
-    G = read_Graph("../../data/graphdata/phy.txt")
-    # G = nx.read_edgelist("../../data/graphdata/PGP.txt", nodetype=int,create_using=nx.Graph)  # 其他数据集使用此方式读取
-    # fixed_weight(G)
+    # G = read_Graph("../../data/graphdata/phy.txt")
+    G = nx.read_edgelist("../../data/graphdata/DBLP.txt", nodetype=int,create_using=nx.Graph)  # 其他数据集使用此方式读取
+    fixed_weight(G)
     read_time = time.time()
     print('读取网络时间：', read_time - start)
     p = 0.05
     I = 1000
-    p_fixed_with_link(G,p)
-    # p_fixed(G,p)
+    # p_fixed_with_link(G,p)
+    p_fixed(G,p)
     # p_inEdge(G)
     d = 2
     algorithm_output = CCA(G, 50, d)
     list_IC_hep = []
-    print("p=",p,"R,I=",I,",data=phy,Graph")
+    print("p=",p,"I=",I,",data=DBLP,Graph")
     for k in range(1, 51):
         S = algorithm_output[0][:k]
         cur_spread = IC(G, S, I)
@@ -145,5 +145,5 @@ if __name__ == "__main__":
     import pandas as pd
 
     df_IC_hep = pd.DataFrame(list_IC_hep)
-    df_IC_hep.to_csv('../../data/output/CCA/IC_CCA2(p=0.05R,I=1000)_phy_Graph.csv')
+    df_IC_hep.to_csv('../../data/output/CCA/IC_CCA2(p=0.05,I=1000)_DBLP_Graph.csv')
     print('文件输出完毕——结束')

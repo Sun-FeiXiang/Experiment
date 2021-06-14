@@ -104,18 +104,18 @@ def degreeDiscountStar(G, k, p=.01):
 if __name__ == "__main__":
     start = time.time()
     # G = read_Graph('../../data/graphdata/phy.txt',directed=True)#读取为有向图
-    G = nx.read_edgelist("../../data/graphdata/PGP.txt", nodetype=int, create_using=nx.Graph)  # 其他数据集使用此方式读取
+    G = nx.read_edgelist("../../data/graphdata/email.txt", nodetype=int, create_using=nx.Graph)  # 其他数据集使用此方式读取
     fixed_weight(G)  # 设置默认权重为1
     read_time = time.time()
     print('读取网络时间：', read_time - start)
-    p = 0.05
+    p = "random"
     I = 1000
-    p_fixed_with_link(G, p)
-    # p_fixed(G,p)
+    # p_fixed_with_link(G, p)
+    p_fixed(G,p)
     # p_inEdge(G)
     output = degreeDiscountIC(G, 50)
     list_IC_hep = []
-    print("p=", p, "R,I=", I, ",data=PGP,Graph")
+    print("p=", p, ",I=", I, ",data=email,Graph")
     for k in range(1, 51):
         S = output[0][:k]
         cur_spread = IC(G, S, 1000)
@@ -132,5 +132,5 @@ if __name__ == "__main__":
     import pandas as pd
 
     df_IC_hep = pd.DataFrame(list_IC_hep)
-    df_IC_hep.to_csv('../../data/output/degreeDiscount/IC_degreeDiscount(p=0.05R,I=1000)_PGP_Graph.csv')
+    df_IC_hep.to_csv('../../data/output/degreeDiscount/IC_degreeDiscount(p=random,I=1000)_email_Graph.csv')
     print('文件输出完毕——结束')

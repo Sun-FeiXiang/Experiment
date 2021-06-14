@@ -5,8 +5,10 @@
 """
 import collections
 import copy
-
-
+from preprocessing.read_txt_nx import read_Graph
+from preprocessing.generation_propagation_probability import p_fixed,p_fixed_with_link,fixed_weight,fixed_probability
+from model.ICM_nx import spread_run_IC
+import pandas as pd
 from algorithm.priorityQueue import PriorityQueue as PQ
 import numpy as np
 
@@ -147,16 +149,13 @@ def modularity(g, community_list):
             intra_edges[community_id[ei]] += 1
         else:
             pass
-
     # calculate modularity Q, time complexity: O(C)
     q = 0
     num_edges = g.number_of_edges()
-
     for i in range(0, len(community_list)):
         ls = intra_edges[i] / num_edges
         ds = pow((intra_degree[i] / (2 * num_edges)), 2)
         q += (ls - ds)
-
     return q
 
 
@@ -198,10 +197,7 @@ def Merge_Community(G, C):
             C = copy.deepcopy(new_C)
         else:
             flag = 0
-
-
     return C
-
 
 
 def Finding(G, k, C):
@@ -213,30 +209,29 @@ def Finding(G, k, C):
         S.append(key)
         if (len(S) >= k):
             break
-
     return S
 
 
 
 if __name__ == "__main__":
-
-    from dataPreprocessing.read_txt_nx import read_Graph
-
-    G = read_Graph("../data/graphdata/hep.txt")
+    G = read_Graph("../data/graphdata/hep.txt",directed=False)
+    # G = nx.read_edgelist("../../data/graphdata/email.txt", nodetype=int, create_using=nx.Graph)  # 其他数据集使用此方式读取
+    # fixed_weight(G)
     S = Seeding(G)
     C = Label_propagation(G, S)
     C = Merge_Community(G,C)
     output = Finding(G, 90, C)
+    p = 0.01
+    I = 1000
     print(S)
-    from diffusion.Networkx_diffusion import spread_run_IC
-    #average_cover_size = spread_run_IC(G, S, 0.05, 1000)
-    #print(average_cover_size)
-
-
+    # p_fixed_with_link(G, p)
+    p_fixed(G, p)
+    # p_inEdge(G)
     list_IC_hep = []
+    print("p=", p, ",I=", I, ",data=hep,Graph")
     for k in range(1, 50):
         S = output[:k]
-        cur_spread = spread_run_IC(G, S, 0.01, 1000)
+        cur_spread = spread_run_IC(G, S, p, I)
         print('k = ', k, '选取节点集为：', S)
         print('k=', k, '平均覆盖大小：', cur_spread)
         list_IC_hep.append({
@@ -244,8 +239,7 @@ if __name__ == "__main__":
             'average cover size': cur_spread,
             'S': S
         })
-    import pandas as pd
 
     df_IC_hep = pd.DataFrame(list_IC_hep)
-    df_IC_hep.to_csv('../data/output/IMELPR/IC_node=50(p=0.01)_hep_Graph.csv')
-    # print('文件输出完毕——结束')
+    df_IC_hep.to_csv('../data/output/ELPR/IC_ELPR(p=0.01)_hep_Graph.csv')
+    print('文件输出完毕——结束')

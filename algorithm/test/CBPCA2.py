@@ -1,10 +1,10 @@
 """
 Core-based edge covering algorithm
 基于核的边覆盖算法
-覆盖系数 c=p*10
+覆盖系数 c:(0,1)
 优先选择pn=sqrt(d**2+k_s**2)大的节点
 然后利用k-truss，计算边的truss值
-选择pn值大的点，覆盖周围truss值大的边(覆盖时采用当前选择种子节点的邻居个数)，并标记相应的点
+选择pn值大的点，覆盖周围truss值大的边（覆盖时采用平均度），并标记相应的点
 """
 from heapdict import heapdict
 from timeit import default_timer as timer
@@ -77,7 +77,7 @@ def path_cover(G, CO_v, node, edge_truss_number, c, ad):
     :return: 覆盖到的点集
     """
     q = [node]
-    node_neighbors_num = len(list(G.neighbors(node))) #ad  # 节点的邻居个数设置为该节点的覆盖大小
+    node_neighbors_num = ad  # 节点的邻居个数设置为该节点的覆盖大小
     cover_list = []
     while len(q) > 0 and len(cover_list) < node_neighbors_num:
         u = q.pop(0)
@@ -85,19 +85,23 @@ def path_cover(G, CO_v, node, edge_truss_number, c, ad):
         if len(u_neighbors) == 0:  # 如果该点没有邻居则继续
             continue
         cover_num = round(c * len(u_neighbors))  # 覆盖个数等于覆盖概率乘以邻居个数 四舍五入取整
-        # print("该节点覆盖个数",cover_num)
+        if cover_num == 0:# 每层覆盖个数至少为1
+            cover_num = 1
+        # print("覆盖个数",cover_num)
         adj_truss_number = dict()  # 邻边的truss值
         for v in u_neighbors:
             adj_truss_number[u, v] = edge_truss_number[u, v]
         adj_truss_number = sorted(adj_truss_number.items(), key=lambda x: x[1], reverse=True)
-        # print("邻边truss",adj_truss_number)
-        u_cover_list = [u]
+        u_cover_list = []
         CO_v[u] = True
-        for i in range(cover_num):
-            top_truss = adj_truss_number[i][0][1]
+        i, j = 0, 0
+        while i < cover_num and j < len(adj_truss_number):  # 选择未被覆盖的前几个,i不能无限制的加
+            top_truss = adj_truss_number[j][0][1]
             if not CO_v[top_truss]:
                 CO_v[top_truss] = True
                 u_cover_list.append(top_truss)
+                i = i + 1
+            j = j + 1
         cover_list.extend(u_cover_list)  # 总覆盖的节点
         q.extend(u_cover_list)
     choose = True  # 是否选择该节点作为种子节点
@@ -216,8 +220,8 @@ if __name__ == "__main__":
     print('读取网络时间：', read_time - start)
     p = 0.01
     I = 1000
-    p_fixed_with_link(G, p)
-    # p_fixed(G, p)
+    # p_fixed_with_link(G, p)
+    p_fixed(G, p)
     # p_inEdge(G)
     algorithm_output = CBPCA(G, 50, p * 10)
     list_IC_hep = []
@@ -235,6 +239,6 @@ if __name__ == "__main__":
             'average cover size': cur_spread,
             'S': S
         })
-    # df_IC_hep = pd.DataFrame(list_IC_hep)
-    # df_IC_hep.to_csv('../../data/output/CBPCA/IC_CBPCA_new(p=0.01,I=1000)_hep_Graph.csv')
-    # print('文件输出完毕——结束')
+    df_IC_hep = pd.DataFrame(list_IC_hep)
+    df_IC_hep.to_csv('../../data/output/CBPCA/IC_CBPCA2(p=0.01,I=1000)_email_Graph.csv')
+    print('文件输出完毕——结束')

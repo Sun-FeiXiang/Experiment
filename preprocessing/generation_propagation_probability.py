@@ -86,3 +86,6 @@ def p_inEdge(G):
 def fixed_weight(G):
     for edge in G.edges:
         G.edges[edge]['weight'] = 1
+def fixed_distance(G):
+    for edge in G.edges:
+        G.edges[edge]['distance'] = 1
